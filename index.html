@@ -1,5 +1,3 @@
-tml
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -274,7 +272,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="toast" id="toast"></div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbwUFZ2WxADCLACfQouIX15gJxJggSVlef95YLcH-ciQcVre1u8AJmkixk2AJb5odSoyrQ/exec";
+const API = "https://script.google.com/macros/s/AKfycbw7iPBdMkuh-BQX0EloScLhTwioPXz9ekp3R9rB4fNnjNNtE3ohDCieESaDNWMIBXsMVQ/exec";
 
 // ── DATA ─────────────────────────────────────────────────────────
 const SERVICES = [
@@ -549,7 +547,6 @@ async function bookAppointment(){
 
 function closeSuccess(){
   document.getElementById("successOverlay").classList.remove("open");
-  // Reset everything and refresh
   setTimeout(()=>location.reload(),300);
 }
 
@@ -614,7 +611,7 @@ async function doReschedule(){
       document.getElementById("reschedPanel").classList.remove("open");
       document.getElementById("rNewDate").value="";
       document.getElementById("rNewTime").value="";
-      await searchBooking(); // refresh results
+      await searchBooking();
     } else {
       toast("⚠ "+res.message,4000);
     }

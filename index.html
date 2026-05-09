@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Noir Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A96E;
+    --gold-light: #E8D5B0;
+    --gold-dark: #8B6B3D;
+    --ink: #0A0908;
+    --ink2: #1A1815;
+    --ink3: #2A2825;
+    --paper: #F7F3ED;
+    --paper2: #EDE8DF;
+    --muted: #8A8480;
+    --accent: #C9A96E;
+    --danger: #C0392B;
+    --success: #2E7D52;
+    --radius: 2px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ink);
+    color: var(--paper);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .serif { font-family: 'Cormorant Garamond', serif; }
+
+  /* === NOISE OVERLAY === */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === LAYOUT === */
+  .shell {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === HEADER === */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 24px 0;
+  }
+
+  .logo-block {}
+  .logo-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .logo-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--paper);
+  }
+
+  .manage-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: transparent;
+    border: 0.5px solid var(--gold-dark);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .manage-btn:hover { background: rgba(201,169,110,0.1); border-color: var(--gold); }
+
+  /* === PROGRESS BAR === */
+  .progress-wrap {
+    padding: 28px 24px 0;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .progress-seg {
+    flex: 1;
+    height: 1px;
+    background: var(--ink3);
+    transition: background 0.4s ease;
+  }
+  .progress-seg.done { background: var(--gold); }
+  .progress-seg.active { background: var(--gold-light); }
+
+  .step-label {
+    padding: 10px 24px 0;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* === STEP TITLE === */
+  .step-heading {
+    padding: 20px 24px 6px;
+  }
+  .step-heading h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    color: var(--paper);
+  }
+  .step-heading p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* === DIVIDER === */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 24px;
+    margin: 4px 0 16px;
+  }
+  .divider-line { flex: 1; height: 0.5px; background: var(--ink3); }
+  .divider-diamond {
+    width: 5px; height: 5px;
+    background: var(--gold-dark);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  /* === CONTENT AREA === */
+  .content { padding: 0 24px; flex: 1; }
+
+  /* === SERVICE CARDS === */
+  .services-grid { display: flex; flex-direction: column; gap: 10px; }
+  .service-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: var(--ink2);
+    border: 0.5px solid var(--ink3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--gold);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.25s ease;
+  }
+  .service-card:hover { border-color: var(--ink3); background: #1E1C1A; }
+  .service-card:hover::before { transform: scaleY(0.4); }
+  .service-card.selected { border-color: var(--gold-dark); background: #1E1B16; }
+  .service-card.selected::before { transform: scaleY(1); }
+
+  .svc-info {}
+  .svc-number {
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 3px;
+  }
+  .svc-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--paper); }
+  .svc-desc { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 300; }
+
+  .svc-price-block { text-align: right; }
+  .svc-currency { font-size: 10px; color: var(--gold-dark); vertical-align: super; }
+  .svc-price { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--gold); }
+
+  .svc-check {
+    width: 18px; height: 18px;
+    border: 0.5px solid var(--gold-dark);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 6px;
+    margin-left: auto;
+    transition: all 0.2s;
+  }
+  .service-card.selected .svc-check { background: var(--gold); border-color: var(--gold); }
+  .svc-check svg { opacity: 0; transition: opacity 0.2s; width: 10px; height: 10px; }
+  .service-card.selected .svc-check svg { opacity: 1; }
+
+  /* === STYLIST CARDS === */
+  .stylists-grid { display: flex; flex-direction: column; gap: 10px; }
+  .stylist-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--ink2);
+    border: 0.5px solid var(--ink3);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .stylist-card::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 0;
+    background: rgba(201,169,110,0.05);
+    transition: width 0.25s;
+  }
+  .stylist-card:hover { border-color: var(--ink3); }
+  .stylist-card:hover::after { width: 100%; }
+  .stylist-card.selected { border-color: var(--gold-dark); background: #1E1B16; }
+
+  .stylist-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--ink3);
+    border: 0.5px solid var(--gold-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--gold);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .stylist-info { position: relative; z-index: 1; }
+  .stylist-name { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 400; color: var(--paper); }
+  .stylist-role { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 300; letter-spacing: 0.04em; }
+  .stylist-badge {
+    margin-left: auto;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 0.5px solid var(--gold-dark);
+    padding: 4px 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .stylist-badge.hidden { visibility: hidden; }
+
+  /* === CALENDAR === */
+  .calendar-wrap { background: var(--ink2); border: 0.5px solid var(--ink3); padding: 20px; }
+  .cal-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+  }
+  .cal-month { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--paper); }
+  .cal-nav { background: transparent; border: 0.5px solid var(--ink3); color: var(--muted); width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .cal-nav:hover { border-color: var(--gold-dark); color: var(--gold); }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day-name { text-align: center; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 6px 0; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 300; cursor: pointer; color: var(--paper);
+    transition: all 0.15s;
+    position: relative;
+  }
+  .cal-day:empty { cursor: default; }
+  .cal-day.past { color: var(--ink3); cursor: default; }
+  .cal-day.today::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 3px; height: 3px; background: var(--gold); border-radius: 50%; }
+  .cal-day:not(.past):not(:empty):hover { color: var(--gold); }
+  .cal-day.selected { background: var(--gold); color: var(--ink) !important; font-weight: 500; }
+
+  /* === TIME SLOTS === */
+  .times-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .time-slot {
+    padding: 14px 8px;
+    background: var(--ink2);
+    border: 0.5px solid var(--ink3);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--paper);
+    position: relative;
+  }
+  .time-slot:hover { border-color: var(--gold-dark); color: var(--gold); }
+  .time-slot.selected { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+  .time-slot .time-period { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-top: 1px; color: inherit; opacity: 0.7; }
+
+  /* === INFO FORM === */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 8px; }
+  .form-input {
+    width: 100%;
+    background: var(--ink2);
+    border: 0.5px solid var(--ink3);
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--gold-dark); }
+  .form-input::placeholder { color: var(--muted); font-size: 14px; }
+
+  /* === SUMMARY BOX === */
+  .summary-box {
+    background: var(--ink2);
+    border: 0.5px solid var(--ink3);
+    border-left: 2px solid var(--gold-dark);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .summary-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 5px; font-weight: 300; }
+  .summary-row:last-child { margin-bottom: 0; color: var(--paper); border-top: 0.5px solid var(--ink3); padding-top: 8px; margin-top: 6px; }
+  .summary-total { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gold); }
+
+  /* === NAVIGATION === */
+  .nav-wrap {
+    padding: 24px 24px 32px;
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    outline: none;
+  }
+  .btn-back {
+    background: transparent;
+    color: var(--muted);
+    border: 0.5px solid var(--ink3);
+  }
+  .btn-back:hover { border-color: var(--muted); color: var(--paper); }
+  .btn-next {
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .btn-next:hover { background: var(--gold-light); }
+  .btn-next:disabled { background: var(--ink3); color: var(--muted); cursor: default; }
+  .btn-confirm {
+    background: transparent;
+    border: 0.5px solid var(--gold-dark);
+    color: var(--gold);
+    flex: 1;
+  }
+  .btn-confirm:hover { background: rgba(201,169,110,0.1); }
+  .btn-confirm:disabled { opacity: 0.4; cursor: default; }
+
+  /* === MODAL OVERLAY === */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  /* === SUCCESS MODAL === */
+  .success-modal {
+    background: var(--ink2);
+    border: 0.5px solid var(--gold-dark);
+    padding: 40px 36px;
+    max-width: 340px;
+    width: 90%;
+    text-align: center;
+    transform: translateY(16px);
+    transition: transform 0.3s ease;
+  }
+  .overlay.open .success-modal { transform: translateY(0); }
+
+  .success-icon {
+    width: 56px; height: 56px;
+    border: 0.5px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .success-icon svg { width: 24px; height: 24px; }
+
+  .success-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--paper); margin-bottom: 8px; }
+  .success-sub { font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.6; margin-bottom: 28px; }
+  .success-close {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 0.5px solid var(--gold-dark);
+    color: var(--gold);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .success-close:hover { background: rgba(201,169,110,0.1); }
+
+  /* === MANAGE MODAL === */
+  .manage-modal {
+    background: var(--ink2);
+    border: 0.5px solid var(--ink3);
+    border-top: 2px solid var(--gold-dark);
+    padding: 32px 28px;
+    max-width: 400px;
+    width: 90%;
+    transform: translateY(16px);
+    transition: transform 0.3s ease;
+  }
+  .overlay.open .manage-modal { transform: translateY(0); }
+
+  .manage-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--paper); margin-bottom: 4px; }
+  .manage-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; font-weight: 300; }
+
+  .booking-card {
+    background: var(--ink);
+    border: 0.5px solid var(--ink3);
+    border-left: 2px solid var(--gold-dark);
+    padding: 14px 16px;
+    margin-bottom: 8px;
+  }
+  .booking-svc { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--paper); font-weight: 400; }
+  .booking-meta { font-size: 12px; color: var(--muted); margin-top: 3px; font-weight: 300; }
+
+  .manage-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .manage-btn-action {
+    flex: 1;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    border: 0.5px solid var(--ink3);
+    color: var(--muted);
+  }
+  .manage-btn-action:hover { color: var(--paper); border-color: var(--muted); }
+  .manage-btn-action.danger:hover { color: var(--danger); border-color: var(--danger); }
+  .manage-close {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 0.5px solid var(--ink3);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .manage-close:hover { color: var(--paper); border-color: var(--muted); }
+
+  /* Reschedule sub-form */
+  .resched-form { display: none; margin-top: 12px; }
+  .resched-form.open { display: block; }
+  .resched-form .form-input { margin-bottom: 8px; }
+  .resched-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* Fade in step */
+  .step-in { animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* Decorative ornament */
+  .ornament {
+    text-align: center;
+    color: var(--gold-dark);
+    font-size: 18px;
+    letter-spacing: 8px;
+    margin: 8px 0;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-block">
+      <div class="logo-eyebrow">Established 2010</div>
+      <div class="logo-name serif">Noir & Co.</div>
+    </div>
+    <button class="manage-btn" onclick="openManage()">Manage Booking</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-seg" id="seg1"></div>
+    <div class="progress-seg" id="seg2"></div>
+    <div class="progress-seg" id="seg3"></div>
+    <div class="progress-seg" id="seg4"></div>
+    <div class="progress-seg" id="seg5"></div>
+  </div>
+  <div class="step-label" id="stepLabel">Step 1 of 5 — Services</div>
+
+  <!-- STEP HEADING -->
+  <div class="step-heading" id="stepHeadingWrap">
+    <h2 id="stepTitle" class="serif">Choose your services</h2>
+    <p id="stepSub">Select one or more treatments for your visit</p>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+
+  <!-- CONTENT -->
+  <div class="content" id="stepContent"></div>
+
+  <!-- NAV -->
+  <div class="nav-wrap" id="navWrap"></div>
+
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="overlay" id="successOverlay">
+  <div class="success-modal">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <div class="success-title serif">Appointment Confirmed</div>
+    <div class="success-sub">Your reservation has been secured. We look forward to welcoming you to Noir & Co.</div>
+    <div class="ornament">· · ✦ · ·</div>
+    <br/>
+    <button class="success-close" onclick="closeSuccess()">Close</button>
+  </div>
+</div>
+
+<!-- MANAGE OVERLAY -->
+<div class="overlay" id="manageOverlay">
+  <div class="manage-modal">
+    <div class="manage-title serif">Manage Reservation</div>
+    <div class="manage-sub">Enter your phone number to retrieve your booking</div>
+
+    <label class="form-label">Phone Number</label>
+    <input class="form-input" id="searchPhone" placeholder="+1 (000) 000-0000" style="margin-bottom:10px;" />
+    <button class="btn btn-next" style="display:block;width:100%;margin-bottom:12px;" onclick="searchBooking()">Search Booking</button>
+
+    <div id="bookingResults"></div>
+
+    <div class="resched-form" id="reschedForm">
+      <label class="form-label">New Date</label>
+      <input class="form-input" id="newDate" placeholder="e.g. May 20, 2025" style="margin-bottom:8px;" />
+      <label class="form-label">New Time</label>
+      <input class="form-input" id="newTime" placeholder="e.g. 2:00 PM" style="margin-bottom:8px;" />
+      <button class="resched-submit" onclick="doReschedule()">Confirm Reschedule</button>
+    </div>
+
+    <div class="manage-actions">
+      <button class="manage-btn-action" onclick="toggleResched()">Reschedule</button>
+      <button class="manage-btn-action danger" onclick="cancelBooking()">Cancel</button>
+    </div>
+    <button class="manage-close" onclick="closeManage()">Close</button>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzmvweiiUd_nHSTdKfI85f5k3zJt1Kk-vpKmxrxxKJTZH6QM-ZlzLPI7FUFzMinHt9mKA/exec";
+
+const services = [
+  { id: 1, name: "Haircut", desc: "Precision cut & style", price: 25 },
+  { id: 2, name: "Beard Trim", desc: "Sculpt & shape", price: 15 },
+  { id: 3, name: "Facial", desc: "Luxury skin treatment", price: 40 },
+];
+
+const stylists = [
+  { id: 1, name: "James Walker", role: "Master Stylist", initials: "JW", senior: true },
+  { id: 2, name: "Michael Ross", role: "Senior Artisan", initials: "MR", senior: false },
+];
+
+const times = ["10:00 AM","11:00 AM","1:00 PM","3:00 PM","5:00 PM"];
+
+let step = 1;
+let selectedServices = [];
+let stylist = null;
+let selectedDate = null;
+let selectedTime = "";
+let name = "";
+let phone = "";
+
+// Calendar
+let calYear, calMonth;
+const now = new Date();
+calYear = now.getFullYear();
+calMonth = now.getMonth();
+
+const stepTitles = ["","Choose your services","Select your artisan","Pick a date","Choose a time","Your details"];
+const stepSubs = ["","Select one or more treatments for your visit","Your experience, tailored by the best","Find your perfect moment","Secure your preferred time","Complete your reservation"];
+const stepLabels = ["","Step 1 of 5 — Services","Step 2 of 5 — Stylist","Step 3 of 5 — Date","Step 4 of 5 — Time","Step 5 of 5 — Details"];
+
+function updateProgress() {
+  for (let i = 1; i <= 5; i++) {
+    const seg = document.getElementById('seg'+i);
+    seg.className = 'progress-seg' + (i < step ? ' done' : i === step ? ' active' : '');
+  }
+  document.getElementById('stepLabel').textContent = stepLabels[step];
+  document.getElementById('stepTitle').textContent = stepTitles[step];
+  document.getElementById('stepSub').textContent = stepSubs[step];
+}
+
+function render() {
+  updateProgress();
+  const content = document.getElementById('stepContent');
+  const nav = document.getElementById('navWrap');
+  content.innerHTML = '';
+  nav.innerHTML = '';
+  content.className = 'content step-in';
+
+  if (step === 1) renderServices(content);
+  else if (step === 2) renderStylists(content);
+  else if (step === 3) renderCalendar(content);
+  else if (step === 4) renderTimes(content);
+  else if (step === 5) renderInfo(content);
+
+  renderNav(nav);
+}
+
+function renderServices(c) {
+  const grid = document.createElement('div');
+  grid.className = 'services-grid';
+  services.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'service-card' + (selectedServices.find(x=>x.id===s.id) ? ' selected' : '');
+    card.innerHTML = `
+      <div class="svc-info">
+        <div class="svc-number">0${i+1}</div>
+        <div class="svc-name serif">${s.name}</div>
+        <div class="svc-desc">${s.desc}</div>
+      </div>
+      <div class="svc-price-block">
+        <div><span class="svc-currency">$</span><span class="svc-price">${s.price}</span></div>
+        <div class="svc-check">
+          <svg viewBox="0 0 12 12" fill="none" stroke="#0A0908" stroke-width="2" stroke-linecap="round"><polyline points="1.5 6 4.5 9 10.5 3"></polyline></svg>
+        </div>
+      </div>`;
+    card.onclick = () => {
+      const idx = selectedServices.findIndex(x=>x.id===s.id);
+      if (idx >= 0) selectedServices.splice(idx, 1); else selectedServices.push(s);
+      render();
+    };
+    grid.appendChild(card);
+  });
+  c.appendChild(grid);
+}
+
+function renderStylists(c) {
+  const grid = document.createElement('div');
+  grid.className = 'stylists-grid';
+  stylists.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'stylist-card' + (stylist?.id === s.id ? ' selected' : '');
+    card.innerHTML = `
+      <div class="stylist-avatar serif">${s.initials}</div>
+      <div class="stylist-info">
+        <div class="stylist-name serif">${s.name}</div>
+        <div class="stylist-role">${s.role}</div>
+      </div>
+      <div class="stylist-badge${s.senior ? '' : ' hidden'}">Preferred</div>`;
+    card.onclick = () => { stylist = s; render(); };
+    grid.appendChild(card);
+  });
+  c.appendChild(grid);
+}
+
+function renderCalendar(c) {
+  const wrap = document.createElement('div');
+  wrap.className = 'calendar-wrap';
+
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const dayNames = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const todayDate = now.getDate();
+  const todayMonth = now.getMonth();
+  const todayYear = now.getFullYear();
+
+  let html = `<div class="cal-header">
+    <button class="cal-nav" onclick="prevMonth()">&#8592;</button>
+    <span class="cal-month serif">${monthNames[calMonth]} ${calYear}</span>
+    <button class="cal-nav" onclick="nextMonth()">&#8594;</button>
+  </div>
+  <div class="cal-grid">`;
+
+  dayNames.forEach(d => html += `<div class="cal-day-name">${d}</div>`);
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isPast = (calYear < todayYear) || (calYear === todayYear && calMonth < todayMonth) || (calYear === todayYear && calMonth === todayMonth && d < todayDate);
+    const isToday = d === todayDate && calMonth === todayMonth && calYear === todayYear;
+    const isSel = selectedDate && d === selectedDate.d && calMonth === selectedDate.m && calYear === selectedDate.y;
+    let cls = 'cal-day';
+    if (isPast) cls += ' past';
+    if (isToday) cls += ' today';
+    if (isSel) cls += ' selected';
+    const click = isPast ? '' : `onclick="selectDay(${d})"`;
+    html += `<div class="${cls}" ${click}>${d}</div>`;
+  }
+  html += `</div>`;
+  wrap.innerHTML = html;
+  c.appendChild(wrap);
+}
+
+window.prevMonth = function() {
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+  render();
+};
+window.nextMonth = function() {
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+  render();
+};
+window.selectDay = function(d) {
+  const isPast = (calYear < now.getFullYear()) || (calYear === now.getFullYear() && calMonth < now.getMonth()) || (calYear === now.getFullYear() && calMonth === now.getMonth() && d < now.getDate());
+  if (isPast) return;
+  selectedDate = { d, m: calMonth, y: calYear };
+  render();
+};
+
+function renderTimes(c) {
+  const grid = document.createElement('div');
+  grid.className = 'times-grid';
+  times.forEach(t => {
+    const parts = t.split(' ');
+    const slot = document.createElement('div');
+    slot.className = 'time-slot' + (selectedTime === t ? ' selected' : '');
+    slot.innerHTML = `${parts[0]}<span class="time-period">${parts[1]}</span>`;
+    slot.onclick = () => { selectedTime = t; render(); };
+    grid.appendChild(slot);
+  });
+  c.appendChild(grid);
+}
+
+function renderInfo(c) {
+  const total = selectedServices.reduce((a, b) => a + b.price, 0);
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const dateStr = selectedDate ? `${monthNames[selectedDate.m]} ${selectedDate.d}, ${selectedDate.y}` : '—';
+
+  c.innerHTML = `
+    <div class="summary-box">
+      <div class="summary-row"><span>Services</span><span>${selectedServices.map(s=>s.name).join(', ') || '—'}</span></div>
+      <div class="summary-row"><span>Stylist</span><span>${stylist?.name || '—'}</span></div>
+      <div class="summary-row"><span>Date & Time</span><span>${dateStr} at ${selectedTime || '—'}</span></div>
+      <div class="summary-row"><span>Total</span><span class="summary-total">$${total}</span></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" id="nameInput" placeholder="Your name" value="${name}" oninput="name=this.value;updateConfirmBtn()" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone Number</label>
+      <input class="form-input" id="phoneInput" placeholder="+1 (000) 000-0000" value="${phone}" oninput="phone=this.value;updateConfirmBtn()" />
+    </div>
+  `;
+
+  const nav = document.getElementById('navWrap');
+  nav.innerHTML = '';
+  const backBtn = document.createElement('button');
+  backBtn.className = 'btn btn-back';
+  backBtn.textContent = '← Back';
+  backBtn.onclick = () => { step--; render(); };
+  nav.appendChild(backBtn);
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'btn btn-confirm';
+  confirmBtn.id = 'confirmBtn';
+  confirmBtn.textContent = 'Confirm Reservation';
+  confirmBtn.disabled = !name || !phone;
+  confirmBtn.onclick = book;
+  nav.appendChild(confirmBtn);
+  return;
+}
+
+window.updateConfirmBtn = function() {
+  const btn = document.getElementById('confirmBtn');
+  if (btn) btn.disabled = !name || !phone;
+};
+
+function renderNav(nav) {
+  if (step === 5) return;
+  if (step > 1) {
+    const back = document.createElement('button');
+    back.className = 'btn btn-back';
+    back.textContent = '← Back';
+    back.onclick = () => { step--; render(); };
+    nav.appendChild(back);
+  }
+  const next = document.createElement('button');
+  next.className = 'btn btn-next';
+  next.textContent = step < 5 ? 'Continue →' : '';
+  if (step === 1 && selectedServices.length === 0) next.disabled = true;
+  if (step === 2 && !stylist) next.disabled = true;
+  if (step === 3 && !selectedDate) next.disabled = true;
+  if (step === 4 && !selectedTime) next.disabled = true;
+  next.onclick = () => { step++; render(); };
+  nav.appendChild(next);
+}
+
+async function api(body) {
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+  return res.json();
+}
+
+async function book() {
+  if (!name || !phone) return;
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const dateStr = selectedDate ? `${monthNames[selectedDate.m]} ${selectedDate.d}, ${selectedDate.y}` : '';
+  const total = selectedServices.reduce((a,b)=>a+b.price,0);
+  const res = await api({ action:'book', name, phone, service: selectedServices.map(s=>s.name).join(', '), stylist: stylist.name, date: dateStr, time: selectedTime, price: total });
+  if (res.success) document.getElementById('successOverlay').classList.add('open');
+}
+
+window.closeSuccess = function() {
+  document.getElementById('successOverlay').classList.remove('open');
+  // reset
+  step=1; selectedServices=[]; stylist=null; selectedDate=null; selectedTime=''; name=''; phone='';
+  render();
+};
+
+window.openManage = function() { document.getElementById('manageOverlay').classList.add('open'); };
+window.closeManage = function() { document.getElementById('manageOverlay').classList.remove('open'); document.getElementById('bookingResults').innerHTML=''; document.getElementById('reschedForm').classList.remove('open'); };
+
+window.searchBooking = async function() {
+  const ph = document.getElementById('searchPhone').value;
+  const res = await api({ action:'getBooking', phone: ph });
+  const results = document.getElementById('bookingResults');
+  results.innerHTML = '';
+  (res.bookings || []).forEach(b => {
+    results.innerHTML += `<div class="booking-card"><div class="booking-svc serif">${b.service}</div><div class="booking-meta">${b.date} · ${b.time}</div></div>`;
+  });
+};
+
+window.toggleResched = function() { document.getElementById('reschedForm').classList.toggle('open'); };
+
+window.doReschedule = async function() {
+  const ph = document.getElementById('searchPhone').value;
+  const nd = document.getElementById('newDate').value;
+  const nt = document.getElementById('newTime').value;
+  if (!nd || !nt) return;
+  await api({ action:'reschedule', phone: ph, date: nd, time: nt });
+  alert('Rescheduled successfully');
+  document.getElementById('reschedForm').classList.remove('open');
+};
+
+window.cancelBooking = async function() {
+  const ph = document.getElementById('searchPhone').value;
+  if (!ph) { alert('Enter a phone number first'); return; }
+  if (!confirm('Cancel your booking?')) return;
+  await api({ action:'cancel', phone: ph });
+  alert('Booking cancelled');
+  closeManage();
+};
+
+render();
+</script>
+</body>
+</html>

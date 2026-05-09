@@ -1,215 +1,622 @@
+html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Noir & Co. — Luxury Salon</title>
+<title>S&M Saloon — Book a Cut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --gold:#C9A96E;--gold-light:#E8D5B0;--gold-dark:#8B6B3D;
-  --ink:#0A0908;--ink2:#141210;--ink3:#1E1C1A;--ink4:#2A2825;
-  --paper:#F7F3ED;--paper2:#EDE8DF;--muted:#8A8480;
+  --blk:#0A0A0A;--blk2:#111;--blk3:#1A1A1A;--blk4:#222;--blk5:#2E2E2E;
+  --wht:#F5F5F5;--wht2:#E0E0E0;--wht3:#AAAAAA;--wht4:#666;
+  --red:#D91E18;--red2:#FF2D27;--red3:#A01510;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.18);
 }
 html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--paper);min-height:100vh;overflow-x:hidden}
+body{
+  font-family:'Barlow',sans-serif;
+  background:var(--blk);color:var(--wht);
+  min-height:100vh;overflow-x:hidden;
+  cursor:none;
+}
 
-/* ── NOISE TEXTURE ── */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.035;pointer-events:none;z-index:0}
+/* ── CUSTOM CURSOR ── */
+#cursor{position:fixed;width:10px;height:10px;background:var(--red);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;mix-blend-mode:normal}
+#cursor-ring{position:fixed;width:34px;height:34px;border:1px solid rgba(255,255,255,.4);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:all .12s ease;mix-blend-mode:difference}
+body:hover #cursor{opacity:1}
+.cursor-grow #cursor{width:18px;height:18px;background:var(--red2)}
+.cursor-grow #cursor-ring{width:50px;height:50px;border-color:var(--red)}
+
+/* ── LOADING SCREEN ── */
+#loader{
+  position:fixed;inset:0;background:var(--blk);z-index:9998;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+#loader.out{animation:loaderOut .7s ease forwards}
+@keyframes loaderOut{to{transform:translateY(-100%);opacity:0}}
+
+.load-bg-tools{position:absolute;inset:0;overflow:hidden;opacity:.06}
+.load-bg-tools svg{position:absolute}
+
+.load-center{position:relative;z-index:2;text-align:center}
+.load-logo-line{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px;overflow:hidden}
+.load-ampersand{font-family:'Bebas Neue',sans-serif;font-size:120px;line-height:1;color:var(--red);animation:dropIn .6s .1s cubic-bezier(.23,1.2,.32,1) both}
+.load-sm-wrap{display:flex;flex-direction:column;gap:2px}
+.load-s, .load-m{font-family:'Bebas Neue',sans-serif;font-size:90px;line-height:.9;color:var(--wht);overflow:hidden}
+.load-s span{display:block;animation:slideUp .5s .05s cubic-bezier(.23,1.2,.32,1) both}
+.load-m span{display:block;animation:slideUp .5s .15s cubic-bezier(.23,1.2,.32,1) both}
+.load-subtitle{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.5em;text-transform:uppercase;color:var(--wht3);overflow:hidden}
+.load-subtitle span{display:block;animation:slideUp .5s .3s ease both}
+
+.load-bar-wrap{width:280px;height:2px;background:var(--blk4);margin-top:40px;position:relative;overflow:hidden}
+.load-bar{height:100%;background:var(--red);animation:barFill 1.8s .4s ease forwards;width:0}
+@keyframes barFill{to{width:100%}}
+
+.load-scissors{position:absolute;bottom:0;left:50%;transform:translateX(-50%);animation:scissorDrop .8s 1.9s cubic-bezier(.23,1.2,.32,1) both;opacity:0}
+@keyframes scissorDrop{from{transform:translateX(-50%) translateY(80px) rotate(-20deg);opacity:0}to{transform:translateX(-50%) translateY(0) rotate(0deg);opacity:.15}}
+
+@keyframes dropIn{from{transform:translateY(-60px) scaleY(1.4);opacity:0}to{transform:none;opacity:1}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+
+/* ── BARBER BG PATTERN ── */
+.barber-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.barber-bg svg{position:absolute;opacity:.04}
+.barber-bg .tool-1{top:5%;left:3%;transform:rotate(-15deg);animation:floatTool 14s ease-in-out infinite}
+.barber-bg .tool-2{top:20%;right:5%;transform:rotate(25deg);animation:floatTool 18s 2s ease-in-out infinite}
+.barber-bg .tool-3{bottom:30%;left:8%;transform:rotate(10deg);animation:floatTool 16s 4s ease-in-out infinite}
+.barber-bg .tool-4{bottom:10%;right:10%;transform:rotate(-30deg);animation:floatTool 12s 1s ease-in-out infinite}
+.barber-bg .tool-5{top:50%;left:45%;transform:rotate(5deg);animation:floatTool 20s 3s ease-in-out infinite}
+.barber-bg .tool-6{top:75%;left:25%;transform:rotate(-20deg);animation:floatTool 15s 5s ease-in-out infinite}
+.barber-bg .tool-7{top:35%;right:25%;transform:rotate(40deg);animation:floatTool 17s 2.5s ease-in-out infinite}
+@keyframes floatTool{0%,100%{transform-origin:center;translate:0 0}50%{translate:8px -12px}}
+
+/* Stripe texture */
+.stripe-bg{position:fixed;inset:0;z-index:0;background:repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(255,255,255,.012) 60px);pointer-events:none}
 
 /* ── SHELL ── */
-.shell{position:relative;z-index:1;max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.shell{position:relative;z-index:2;max-width:620px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 
 /* ── HEADER ── */
-.header{display:flex;align-items:center;justify-content:space-between;padding:32px 24px 0}
-.logo-eyebrow{font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:3px}
-.logo-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:.06em}
-.manage-btn{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);background:transparent;border:.5px solid var(--gold-dark);padding:9px 18px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
-.manage-btn:hover{background:rgba(201,169,110,.1);border-color:var(--gold)}
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:28px 32px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.header::after{content:'';position:absolute;bottom:0;left:32px;right:32px;height:1px;background:linear-gradient(90deg,var(--red),transparent)}
 
-/* ── PROGRESS ── */
-.progress-wrap{padding:28px 24px 0;display:flex;gap:5px}
-.seg{flex:1;height:1px;background:var(--ink4);transition:background .4s}
-.seg.done{background:var(--gold)}
-.seg.active{background:var(--gold-light)}
-.step-label{padding:10px 24px 0;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{width:48px;height:48px;position:relative;flex-shrink:0}
+.logo-text-group{display:flex;flex-direction:column;line-height:1}
+.logo-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.04em;line-height:1}
+.logo-name .amp{color:var(--red)}
+.logo-tag{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:.35em;text-transform:uppercase;color:var(--wht4);margin-top:1px}
 
-/* ── STEP HEADING ── */
-.step-heading{padding:20px 24px 4px}
-.step-heading h2{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;line-height:1.15;color:var(--paper)}
-.step-heading p{font-size:12px;color:var(--muted);margin-top:5px;font-weight:300}
+.header-right{display:flex;align-items:center;gap:14px}
+.header-badge{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);border:1px solid rgba(217,30,24,.3);padding:4px 12px}
+.manage-btn{
+  font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--wht);background:transparent;border:1px solid var(--border2);
+  padding:10px 22px;cursor:none;transition:all .22s;
+}
+.manage-btn:hover{background:var(--wht);color:var(--blk);border-color:var(--wht)}
 
-/* ── DIVIDER ── */
-.divider{display:flex;align-items:center;gap:10px;padding:0 24px;margin:6px 0 18px}
-.div-line{flex:1;height:.5px;background:var(--ink4)}
-.div-diamond{width:5px;height:5px;background:var(--gold-dark);transform:rotate(45deg);flex-shrink:0}
+/* ── STEP TRACKER ── */
+.step-track{display:flex;align-items:stretch;border-bottom:1px solid var(--border)}
+.step-node{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 8px;position:relative;transition:background .2s;cursor:default;gap:6px}
+.step-node.done{background:rgba(217,30,24,.06)}
+.step-node.active{background:rgba(255,255,255,.04)}
+.step-node-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:var(--blk5);transition:color .2s}
+.step-node.done .step-node-num{color:var(--red)}
+.step-node.active .step-node-num{color:var(--wht)}
+.step-node-label{font-family:'Barlow Condensed',sans-serif;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--wht4);text-align:center}
+.step-node.active .step-node-label{color:var(--wht3)}
+.step-tick{width:100%;height:2px;background:var(--blk4);position:absolute;bottom:0;left:0}
+.step-node.done .step-tick{background:var(--red)}
+.step-node.active .step-tick{background:var(--wht2)}
+
+/* ── HEADING AREA ── */
+.heading-area{padding:36px 32px 20px;position:relative}
+.heading-eyebrow{
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:.4em;
+  text-transform:uppercase;color:var(--red);margin-bottom:10px;
+  display:flex;align-items:center;gap:10px;
+}
+.heading-eyebrow::before{content:'';width:24px;height:1px;background:var(--red)}
+.heading-title{font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:.95;color:var(--wht);letter-spacing:.02em}
+.heading-title .outline{-webkit-text-stroke:1px var(--wht);color:transparent}
+.heading-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--wht4);margin-top:10px;font-weight:300}
 
 /* ── CONTENT ── */
-.content{padding:0 24px;flex:1}
+.content{padding:0 32px;flex:1}
 
-/* ── SERVICE CARDS ── */
-.services-grid{display:flex;flex-direction:column;gap:10px}
-.service-card{display:flex;align-items:center;gap:0;background:var(--ink2);border:.5px solid var(--ink4);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
-.service-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);transform:scaleY(0);transform-origin:bottom;transition:transform .25s}
-.service-card:hover{background:var(--ink3)}
-.service-card:hover::before{transform:scaleY(.4)}
-.service-card.selected{border-color:var(--gold-dark);background:#1A1710}
-.service-card.selected::before{transform:scaleY(1)}
+/* ── HORIZONTAL SCROLL SERVICES ── */
+.svc-scroll-wrap{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+/* Service Card — editorial tile style */
+.svc-tile{
+  position:relative;background:var(--blk2);border:1px solid var(--border);
+  overflow:hidden;cursor:none;
+  transition:border-color .3s;
+  animation:tileIn .45s both cubic-bezier(.23,1,.32,1);
+}
+@keyframes tileIn{from{opacity:0;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0% 0 0)}}
+.svc-tile:nth-child(1){animation-delay:.05s}
+.svc-tile:nth-child(2){animation-delay:.12s}
+.svc-tile:nth-child(3){animation-delay:.19s}
+.svc-tile:nth-child(4){animation-delay:.26s}
+.svc-tile:nth-child(5){animation-delay:.33s}
+.svc-tile:nth-child(6){animation-delay:.40s}
+.svc-tile:hover{border-color:var(--wht4)}
+.svc-tile.selected{border-color:var(--red)}
 
-.svc-img{width:90px;height:90px;object-fit:cover;flex-shrink:0;filter:brightness(.85) sepia(.15)}
-.svc-body{padding:14px 16px;flex:1}
-.svc-num{font-size:8px;letter-spacing:.22em;color:var(--gold-dark);text-transform:uppercase;margin-bottom:3px}
-.svc-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400}
-.svc-desc{font-size:11px;color:var(--muted);margin-top:2px;font-weight:300}
-.svc-right{padding:14px 16px;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px}
-.svc-price{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);font-weight:300}
-.svc-price sup{font-size:11px;color:var(--gold-dark);vertical-align:super}
-.svc-check{width:18px;height:18px;border:.5px solid var(--gold-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
-.service-card.selected .svc-check{background:var(--gold);border-color:var(--gold)}
-.check-svg{opacity:0;transition:opacity .2s}
-.service-card.selected .check-svg{opacity:1}
+.svc-tile-img{width:100%;height:130px;object-fit:cover;display:block;filter:grayscale(1) brightness(.7);transition:filter .4s,transform .4s}
+.svc-tile:hover .svc-tile-img{filter:grayscale(.6) brightness(.8);transform:scale(1.04)}
+.svc-tile.selected .svc-tile-img{filter:grayscale(.2) brightness(.75)}
+
+.svc-tile-body{padding:14px 14px 12px}
+.svc-tile-num{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:.3em;color:var(--wht4);margin-bottom:4px}
+.svc-tile-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;line-height:1;margin-bottom:4px}
+.svc-tile-desc{font-family:'Barlow',sans-serif;font-size:10px;color:var(--wht4);font-weight:300;line-height:1.4}
+.svc-tile-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 12px;border-top:1px solid var(--border)}
+.svc-tile-price{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--wht);line-height:1}
+.svc-tile-price sup{font-size:12px;vertical-align:super;color:var(--wht3)}
+.svc-tile-check{
+  width:22px;height:22px;border:1px solid var(--wht4);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .22s;position:relative;overflow:hidden;
+}
+.svc-tile-check::before{content:'';position:absolute;inset:0;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:transform .22s}
+.svc-tile.selected .svc-tile-check{border-color:var(--red)}
+.svc-tile.selected .svc-tile-check::before{transform:scaleY(1)}
+.svc-tile-check svg{position:relative;z-index:1;opacity:0;transition:opacity .2s}
+.svc-tile.selected .svc-tile-check svg{opacity:1}
+
+/* wide tile */
+.svc-tile.wide{grid-column:1/-1}
 
 /* ── STYLIST CARDS ── */
-.stylists-grid{display:flex;flex-direction:column;gap:10px}
-.stylist-card{display:flex;align-items:center;gap:0;background:var(--ink2);border:.5px solid var(--ink4);cursor:pointer;transition:all .25s;overflow:hidden;position:relative}
-.stylist-card:hover{background:var(--ink3)}
-.stylist-card.selected{border-color:var(--gold-dark);background:#1A1710}
-.stylist-img{width:80px;height:80px;object-fit:cover;flex-shrink:0;object-position:top;filter:brightness(.85) sepia(.1)}
-.stylist-body{padding:14px 16px;flex:1}
-.stylist-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400}
-.stylist-role{font-size:11px;color:var(--muted);margin-top:2px;font-weight:300}
-.stylist-stars{color:var(--gold);font-size:10px;margin-top:4px;letter-spacing:2px}
-.stylist-badge{margin-right:16px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:.5px solid var(--gold-dark);padding:4px 10px;white-space:nowrap}
+.sty-grid{display:flex;flex-direction:column;gap:0;border:1px solid var(--border)}
+.sty-row{
+  display:flex;align-items:stretch;border-bottom:1px solid var(--border);
+  cursor:none;transition:background .2s;position:relative;overflow:hidden;
+  animation:rowIn .4s both;
+}
+.sty-row:last-child{border-bottom:none}
+@keyframes rowIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+.sty-row:nth-child(1){animation-delay:.05s}
+.sty-row:nth-child(2){animation-delay:.12s}
+.sty-row:nth-child(3){animation-delay:.19s}
+.sty-row:nth-child(4){animation-delay:.26s}
+.sty-row:nth-child(5){animation-delay:.33s}
+
+.sty-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:var(--red);transition:width .25s;z-index:0}
+.sty-row:hover::before{width:3px}
+.sty-row.selected::before{width:3px}
+
+.sty-row:hover{background:rgba(255,255,255,.03)}
+.sty-row.selected{background:rgba(217,30,24,.06)}
+
+.sty-num{
+  font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--blk5);
+  width:56px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  border-right:1px solid var(--border);transition:color .2s;position:relative;z-index:1;
+}
+.sty-row.selected .sty-num{color:var(--red)}
+.sty-img-wrap{width:80px;flex-shrink:0;overflow:hidden;position:relative;z-index:1}
+.sty-img{width:100%;height:100%;object-fit:cover;object-position:top;filter:grayscale(1) brightness(.8);display:block;transition:filter .3s}
+.sty-row:hover .sty-img,.sty-row.selected .sty-img{filter:grayscale(.5) brightness(.9)}
+.sty-body{padding:16px 18px;flex:1;position:relative;z-index:1}
+.sty-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+.sty-role{font-family:'Barlow',sans-serif;font-size:11px;color:var(--wht4);font-weight:300}
+.sty-stars-row{display:flex;gap:3px;margin-top:6px}
+.sty-star{font-size:10px;color:var(--wht4)}
+.sty-star.on{color:var(--wht)}
+.sty-right{padding:16px 18px;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;position:relative;z-index:1}
+.sty-tag{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);border:1px solid rgba(217,30,24,.4);padding:3px 10px}
+.sty-arrow{font-size:18px;color:var(--wht4);transition:color .2s;transform:rotate(0deg)}
+.sty-row.selected .sty-arrow{color:var(--red);transform:rotate(45deg)}
 
 /* ── CALENDAR ── */
-.calendar{background:var(--ink2);border:.5px solid var(--ink4);padding:20px}
-.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.cal-month{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400}
-.cal-nav{background:transparent;border:.5px solid var(--ink4);color:var(--muted);width:30px;height:30px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.cal-nav:hover{border-color:var(--gold-dark);color:var(--gold)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cal-day-name{text-align:center;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:6px 0}
-.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:300;cursor:pointer;color:var(--paper);transition:all .15s;position:relative;border-radius:0}
-.cal-day.empty{pointer-events:none}
-.cal-day.past{color:var(--ink4);cursor:default;pointer-events:none}
-.cal-day.today::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:var(--gold);border-radius:50%}
-.cal-day:not(.past):not(.empty):hover{color:var(--gold)}
-.cal-day.selected{background:var(--gold);color:var(--ink)!important;font-weight:500}
+.cal-outer{border:1px solid var(--border)}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--blk2)}
+.cal-month-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.04em}
+.cal-nav{
+  font-family:'Bebas Neue',sans-serif;font-size:18px;
+  background:transparent;border:1px solid var(--border);color:var(--wht3);
+  width:34px;height:34px;cursor:none;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;
+}
+.cal-nav:hover{background:var(--wht);color:var(--blk);border-color:var(--wht)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-dn{
+  text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:9px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--wht4);
+  padding:12px 0 10px;border-bottom:1px solid var(--border);
+}
+.cal-d{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:400;
+  cursor:none;color:var(--wht3);border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  transition:all .15s;position:relative;
+}
+.cal-d:nth-child(7n){border-right:none}
+.cal-d.empty{pointer-events:none;background:rgba(0,0,0,.2)}
+.cal-d.past{color:var(--blk5);pointer-events:none}
+.cal-d.today{color:var(--wht)}
+.cal-d.today::after{content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--red);border-radius:50%}
+.cal-d:not(.past):not(.empty):hover{background:rgba(255,255,255,.06);color:var(--wht)}
+.cal-d.selected{background:var(--red)!important;color:#fff!important;font-weight:600}
 
 /* ── TIME SLOTS ── */
-.times-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.time-slot{padding:14px 8px;background:var(--ink2);border:.5px solid var(--ink4);text-align:center;cursor:pointer;transition:all .2s;font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--paper)}
-.time-slot:hover{border-color:var(--gold-dark);color:var(--gold)}
-.time-slot.selected{background:var(--gold);color:var(--ink);border-color:var(--gold)}
-.time-period{font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:1px;opacity:.7}
+.time-section-label{
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--wht4);margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.time-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.times-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.t-slot{
+  padding:18px 8px;border:1px solid var(--border);text-align:center;cursor:none;
+  transition:all .22s;position:relative;overflow:hidden;background:var(--blk2);
+}
+.t-slot::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.t-slot:hover::before{transform:scaleX(1)}
+.t-slot:hover{border-color:var(--wht4);background:var(--blk3)}
+.t-slot.selected{background:var(--blk3);border-color:var(--red)}
+.t-slot.selected::before{transform:scaleX(1)}
+.t-time{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.03em;display:block;line-height:1}
+.t-period{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--wht4);display:block;margin-top:3px}
 
-/* ── FORM ── */
-.form-group{margin-bottom:14px}
-.form-label{display:block;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:7px}
-.form-input{width:100%;background:var(--ink2);border:.5px solid var(--ink4);color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:300;padding:13px 15px;outline:none;transition:border-color .2s}
-.form-input:focus{border-color:var(--gold-dark)}
-.form-input::placeholder{color:var(--muted);font-size:13px}
+/* ── FORM & SUMMARY ── */
+.summary-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border:1px solid var(--border);margin-bottom:20px;
+}
+.sum-cell{padding:14px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.sum-cell:nth-child(2n){border-right:none}
+.sum-cell:nth-last-child(-n+2){border-bottom:none}
+.sum-cell.full{grid-column:1/-1;border-right:none}
+.sum-label{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--wht4);margin-bottom:4px}
+.sum-val{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--wht);letter-spacing:.03em}
+.sum-total-num{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--wht);line-height:1}
+.sum-total-num sup{font-size:20px;vertical-align:super}
 
-/* ── SUMMARY BOX ── */
-.summary-box{background:var(--ink2);border:.5px solid var(--ink4);border-left:2px solid var(--gold-dark);padding:14px 16px;margin-bottom:16px}
-.sum-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:300}
-.sum-row.total{color:var(--paper);border-top:.5px solid var(--ink4);padding-top:8px;margin-top:6px;margin-bottom:0}
-.sum-total{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold)}
+.form-group-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-group{margin-bottom:0}
+.form-group.full{grid-column:1/-1}
+.form-label{
+  display:block;font-family:'Barlow Condensed',sans-serif;
+  font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--wht4);margin-bottom:7px;
+}
+.form-input{
+  width:100%;background:var(--blk2);border:1px solid var(--border);
+  color:var(--wht);font-family:'Barlow',sans-serif;font-size:14px;font-weight:300;
+  padding:13px 15px;outline:none;transition:border-color .2s;
+}
+.form-input:focus{border-color:var(--wht3)}
+.form-input::placeholder{color:var(--blk5)}
 
-/* ── NAV BUTTONS ── */
-.nav{padding:24px 24px 36px;display:flex;gap:10px}
-.btn{flex:1;padding:15px;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:all .2s;border:none;outline:none}
-.btn-back{background:transparent;color:var(--muted);border:.5px solid var(--ink4)}
-.btn-back:hover{border-color:var(--muted);color:var(--paper)}
-.btn-next{background:var(--gold);color:var(--ink);font-weight:500}
-.btn-next:hover{background:var(--gold-light)}
-.btn-next:disabled{background:var(--ink4);color:var(--muted);cursor:default}
-.btn-confirm{background:transparent;border:.5px solid var(--gold-dark);color:var(--gold);font-weight:500}
-.btn-confirm:hover{background:rgba(201,169,110,.1)}
-.btn-confirm:disabled{opacity:.4;cursor:default}
+/* ── NAV ── */
+.nav{padding:24px 32px 40px;display:flex;gap:10px}
+.btn{
+  flex:1;padding:16px;font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+  cursor:none;transition:all .22s;border:none;outline:none;font-weight:600;
+}
+.btn-back{background:transparent;color:var(--wht4);border:1px solid var(--border)}
+.btn-back:hover{border-color:var(--wht3);color:var(--wht)}
+.btn-next{background:var(--wht);color:var(--blk)}
+.btn-next:hover:not(:disabled){background:var(--red);color:var(--wht)}
+.btn-next:disabled{background:var(--blk4);color:var(--blk5);cursor:default}
+.btn-confirm{background:var(--red);color:var(--wht)}
+.btn-confirm:hover:not(:disabled){background:var(--red2)}
+.btn-confirm:disabled{opacity:.35;cursor:default}
 
-/* ── OVERLAY ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s;padding:20px}
+/* ── OVERLAYS ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);
+  display:flex;align-items:center;justify-content:center;z-index:800;
+  opacity:0;pointer-events:none;transition:opacity .3s;padding:20px;
+}
 .overlay.open{opacity:1;pointer-events:all}
 
 /* ── SUCCESS MODAL ── */
-.success-modal{background:var(--ink2);border:.5px solid var(--gold-dark);padding:44px 38px;max-width:340px;width:100%;text-align:center;transform:translateY(20px);transition:transform .35s ease}
-.overlay.open .success-modal{transform:translateY(0)}
-.success-ring{width:60px;height:60px;border:.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 22px}
-.success-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;margin-bottom:8px}
-.success-sub{font-size:12px;color:var(--muted);font-weight:300;line-height:1.7;margin-bottom:8px}
-.success-id{font-size:10px;letter-spacing:.12em;color:var(--gold-dark);margin-bottom:24px}
-.ornament{color:var(--gold-dark);font-size:16px;letter-spacing:10px;margin:10px 0}
-.success-close{width:100%;padding:14px;background:transparent;border:.5px solid var(--gold-dark);color:var(--gold);font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:16px}
-.success-close:hover{background:rgba(201,169,110,.1)}
+.success-box{
+  background:var(--blk);border:1px solid var(--wht2);
+  padding:0;max-width:380px;width:100%;
+  transform:translateY(30px);transition:transform .4s cubic-bezier(.23,1,.32,1);
+  position:relative;overflow:hidden;
+}
+.overlay.open .success-box{transform:translateY(0)}
+.success-top{
+  background:var(--red);padding:36px 36px 28px;text-align:center;
+}
+.success-checkmark{
+  width:64px;height:64px;border:2px solid rgba(255,255,255,.4);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
+  animation:spinIn .5s .2s cubic-bezier(.23,1,.32,1) both;
+}
+@keyframes spinIn{from{transform:rotate(-180deg) scale(0);opacity:0}to{transform:none;opacity:1}}
+.success-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.04em;color:#fff}
+.success-bottom{padding:24px 36px 32px;text-align:center}
+.success-sub{font-family:'Barlow',sans-serif;font-size:13px;color:var(--wht3);font-weight:300;line-height:1.7;margin-bottom:8px}
+.success-id{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:.2em;color:var(--wht4);margin-bottom:24px}
+.success-divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+.success-divider-line{flex:1;height:1px;background:var(--border)}
+.success-divider-scissors{color:var(--red);font-size:16px}
+.success-close{
+  width:100%;padding:14px;background:var(--wht);color:var(--blk);border:none;
+  font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+  cursor:none;transition:all .22s;font-weight:700;
+}
+.success-close:hover{background:var(--red);color:#fff}
 
 /* ── MANAGE MODAL ── */
-.manage-modal{background:var(--ink2);border:.5px solid var(--ink4);border-top:2px solid var(--gold-dark);padding:32px 28px;max-width:420px;width:100%;transform:translateY(20px);transition:transform .35s ease;max-height:90vh;overflow-y:auto}
-.overlay.open .manage-modal{transform:translateY(0)}
-.manage-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;margin-bottom:4px}
-.manage-sub{font-size:12px;color:var(--muted);margin-bottom:20px;font-weight:300}
-.booking-card{background:var(--ink);border:.5px solid var(--ink4);border-left:2px solid var(--gold-dark);padding:14px 16px;margin-bottom:8px}
-.booking-svc{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400}
-.booking-meta{font-size:11px;color:var(--muted);margin-top:3px;font-weight:300;line-height:1.6}
+.manage-box{
+  background:var(--blk);border:1px solid var(--border);
+  border-top:3px solid var(--red);
+  padding:32px;max-width:460px;width:100%;
+  transform:translateY(30px);transition:transform .4s cubic-bezier(.23,1,.32,1);
+  max-height:90vh;overflow-y:auto;
+}
+.overlay.open .manage-box{transform:translateY(0)}
+.manage-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.04em;margin-bottom:4px}
+.manage-sub{font-family:'Barlow',sans-serif;font-size:12px;color:var(--wht4);margin-bottom:22px;font-weight:300}
+.booking-card{
+  background:var(--blk2);border-left:3px solid var(--red);
+  padding:14px 16px;margin-bottom:10px;
+}
+.bc-svc{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.bc-meta{font-family:'Barlow',sans-serif;font-size:11px;color:var(--wht4);line-height:1.8;font-weight:300}
 .manage-actions{display:flex;gap:8px;margin-top:14px}
-.ma-btn{flex:1;padding:11px;font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .2s;background:transparent;border:.5px solid var(--ink4);color:var(--muted)}
-.ma-btn:hover{color:var(--paper);border-color:var(--muted)}
-.ma-btn.danger:hover{color:#E05252;border-color:#E05252}
-.ma-close{width:100%;padding:11px;background:transparent;border:.5px solid var(--ink4);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:all .2s}
-.ma-close:hover{color:var(--paper);border-color:var(--muted)}
-
-/* Resched panel */
-.resched-panel{margin-top:14px;background:var(--ink);border:.5px solid var(--ink4);padding:16px;display:none}
-.resched-panel.open{display:block}
-.resched-submit{width:100%;padding:12px;background:var(--gold);color:var(--ink);border:none;font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;font-weight:500;margin-top:8px;transition:background .2s}
-.resched-submit:hover{background:var(--gold-light)}
+.ma-btn{
+  flex:1;padding:11px;font-family:'Barlow Condensed',sans-serif;font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;cursor:none;transition:all .2s;
+  background:transparent;border:1px solid var(--border);color:var(--wht4);
+}
+.ma-btn:hover{color:var(--wht);border-color:var(--wht3)}
+.ma-btn.danger:hover{color:var(--red);border-color:var(--red)}
+.ma-close{
+  width:100%;padding:11px;background:transparent;border:1px solid var(--border);
+  color:var(--wht4);font-family:'Barlow Condensed',sans-serif;font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;cursor:none;margin-top:10px;transition:all .2s;
+}
+.ma-close:hover{color:var(--wht);border-color:var(--wht3)}
+.resched-panel{margin-top:14px;background:var(--blk2);border:1px solid var(--border);padding:16px;display:none}
+.resched-panel.open{display:block;animation:rowIn .3s ease}
+.resched-submit{
+  width:100%;padding:12px;background:var(--wht);color:var(--blk);border:none;
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:.25em;
+  text-transform:uppercase;cursor:none;font-weight:700;margin-top:10px;transition:all .22s;
+}
+.resched-submit:hover{background:var(--red);color:#fff}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--ink2);border:.5px solid var(--gold-dark);color:var(--paper);font-size:12px;font-weight:300;padding:12px 22px;letter-spacing:.04em;opacity:0;transition:all .35s;z-index:9999;white-space:nowrap}
+.toast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--blk2);border:1px solid var(--wht3);border-left:3px solid var(--red);
+  color:var(--wht);font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.08em;
+  padding:12px 24px;opacity:0;transition:all .32s;z-index:9999;white-space:nowrap;
+}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── LOADING SPINNER ── */
-.spinner{display:inline-block;width:14px;height:14px;border:1.5px solid rgba(201,169,110,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+/* ── SPINNER ── */
+.spinner{display:inline-block;width:12px;height:12px;border:1.5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── STEP FADE ── */
-.step-in{animation:fadeUp .3s ease both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* ── FAQ ── */
+.faq-fab{
+  position:fixed;bottom:32px;right:32px;z-index:700;
+  width:56px;height:56px;background:var(--blk);border:2px solid var(--wht);
+  cursor:none;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;
+  transition:all .25s;animation:fabPop .5s 2.5s cubic-bezier(.23,1.4,.32,1) both;
+}
+.faq-fab:hover{background:var(--wht)}
+.faq-fab:hover svg path, .faq-fab:hover .faq-fab-label{color:var(--blk);fill:var(--blk)}
+.faq-fab-label{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:.1em;color:var(--wht);transition:color .25s}
+@keyframes fabPop{from{opacity:0;transform:scale(0) rotate(180deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 
-/* Scrollbar */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--ink)}
-::-webkit-scrollbar-thumb{background:var(--ink4)}
+.faq-panel{
+  position:fixed;bottom:100px;right:32px;z-index:700;
+  width:350px;max-height:500px;
+  background:var(--blk);border:1px solid var(--border2);border-top:3px solid var(--red);
+  transform:translateY(20px) scale(.95);transform-origin:bottom right;
+  opacity:0;pointer-events:none;
+  transition:all .3s cubic-bezier(.23,1,.32,1);
+  display:flex;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.8);
+}
+.faq-panel.open{opacity:1;pointer-events:all;transform:translateY(0) scale(1)}
+.faq-head{padding:18px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.faq-head-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.05em;line-height:1}
+.faq-head-sub{font-family:'Barlow',sans-serif;font-size:11px;color:var(--wht4);font-weight:300;margin-top:2px}
+.faq-scroll{overflow-y:auto;flex:1}
+.faq-scroll::-webkit-scrollbar{width:2px}
+.faq-scroll::-webkit-scrollbar-thumb{background:var(--blk5)}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{
+  width:100%;background:transparent;border:none;color:var(--wht);
+  font-family:'Barlow',sans-serif;font-size:12px;font-weight:400;
+  padding:14px 18px;text-align:left;cursor:none;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  transition:background .18s;line-height:1.4;
+}
+.faq-q:hover{background:rgba(255,255,255,.04)}
+.faq-item.open .faq-q{background:rgba(217,30,24,.06)}
+.faq-icon-btn{
+  width:18px;height:18px;flex-shrink:0;border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;line-height:1;color:var(--wht4);margin-top:1px;
+  transition:all .22s;font-family:'Bebas Neue',sans-serif;
+}
+.faq-item.open .faq-icon-btn{background:var(--red);border-color:var(--red);color:#fff;transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.faq-item.open .faq-a{max-height:180px}
+.faq-a-text{padding:0 18px 14px;font-family:'Barlow',sans-serif;font-size:11px;color:var(--wht4);line-height:1.7;font-weight:300}
+
+/* ── STEP ANIMATION ── */
+.step-animate{animation:stepSlide .35s cubic-bezier(.23,1,.32,1) both}
+@keyframes stepSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--blk)}
+::-webkit-scrollbar-thumb{background:var(--blk5)}
+
+@media(max-width:480px){
+  .svc-scroll-wrap{grid-template-columns:1fr}
+  .svc-tile.wide{grid-column:auto}
+  .form-group-wrap{grid-template-columns:1fr}
+  .summary-grid{grid-template-columns:1fr}
+  .sum-cell:nth-child(2n){border-right:none}
+  .sum-cell{border-right:none!important}
+  .faq-panel{width:calc(100vw - 40px);right:20px}
+  .faq-fab{right:20px;bottom:20px}
+  .heading-title{font-size:38px}
+}
 </style>
 </head>
 <body>
 
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ═══════════════ LOADER ═══════════════ -->
+<div id="loader">
+  <!-- Floating tools in loader bg -->
+  <div class="load-bg-tools">
+    <!-- Scissors SVG repeated at various spots -->
+    <svg style="top:10%;left:5%;width:140px;transform:rotate(-20deg)" viewBox="0 0 100 60" fill="white"><path d="M10 10 Q30 5 50 30 Q30 55 10 50 Q5 30 10 10Z" opacity=".5"/><path d="M90 10 Q70 5 50 30 Q70 55 90 50 Q95 30 90 10Z" opacity=".5"/><line x1="50" y1="30" x2="95" y2="5" stroke="white" stroke-width="3"/><line x1="50" y1="30" x2="95" y2="55" stroke="white" stroke-width="3"/><circle cx="10" cy="30" r="8" fill="none" stroke="white" stroke-width="2"/><circle cx="90" cy="30" r="8" fill="none" stroke="white" stroke-width="2"/></svg>
+    <svg style="top:15%;right:8%;width:80px;transform:rotate(30deg)" viewBox="0 0 30 120" fill="white"><rect x="12" y="0" width="6" height="80" rx="3"/><rect x="8" y="80" width="14" height="40" rx="7"/><rect x="6" y="75" width="18" height="8" rx="2"/></svg>
+    <svg style="bottom:20%;left:3%;width:100px;transform:rotate(15deg)" viewBox="0 0 120 30" fill="white"><rect x="0" y="10" width="90" height="10" rx="5"/><rect x="90" y="5" width="30" height="20" rx="4"/><line x1="0" y1="10" x2="0" y2="20" stroke="white" stroke-width="2"/></svg>
+    <svg style="bottom:10%;right:5%;width:70px;transform:rotate(-10deg)" viewBox="0 0 40 120" fill="white"><ellipse cx="20" cy="15" rx="15" ry="15" fill="none" stroke="white" stroke-width="3"/><rect x="17" y="30" width="6" height="70" rx="3"/><path d="M10 100 L20 100 L30 100 Q35 120 20 120 Q5 120 10 100Z"/></svg>
+    <svg style="top:50%;left:48%;width:90px;transform:rotate(5deg)" viewBox="0 0 100 60" fill="white"><path d="M10 10 Q30 5 50 30 Q30 55 10 50 Q5 30 10 10Z" opacity=".5"/><path d="M90 10 Q70 5 50 30 Q70 55 90 50 Q95 30 90 10Z" opacity=".5"/><line x1="50" y1="30" x2="95" y2="5" stroke="white" stroke-width="3"/><line x1="50" y1="30" x2="95" y2="55" stroke="white" stroke-width="3"/><circle cx="10" cy="30" r="8" fill="none" stroke="white" stroke-width="2"/><circle cx="90" cy="30" r="8" fill="none" stroke="white" stroke-width="2"/></svg>
+    <svg style="top:78%;left:30%;width:60px;transform:rotate(-35deg)" viewBox="0 0 30 120" fill="white"><rect x="12" y="0" width="6" height="80" rx="3"/><rect x="8" y="80" width="14" height="40" rx="7"/></svg>
+    <svg style="top:25%;left:38%;width:110px;transform:rotate(20deg)" viewBox="0 0 120 30" fill="white"><rect x="0" y="10" width="90" height="10" rx="5"/><rect x="90" y="5" width="30" height="20" rx="4"/></svg>
+  </div>
+
+  <div class="load-center">
+    <div class="load-logo-line">
+      <div class="load-sm-wrap">
+        <div class="load-s"><span>S</span></div>
+      </div>
+      <div class="load-ampersand">&amp;</div>
+      <div class="load-sm-wrap">
+        <div class="load-m"><span>M</span></div>
+      </div>
+    </div>
+    <div class="load-subtitle"><span>SALOON &nbsp;·&nbsp; EST. 2015</span></div>
+    <div class="load-bar-wrap"><div class="load-bar"></div></div>
+  </div>
+
+  <!-- Big scissors at bottom -->
+  <div class="load-scissors">
+    <svg width="200" height="80" viewBox="0 0 200 80" fill="white">
+      <path d="M10 20 Q50 10 100 40 Q50 70 10 60 Q4 40 10 20Z" opacity=".6"/>
+      <path d="M190 20 Q150 10 100 40 Q150 70 190 60 Q196 40 190 20Z" opacity=".6"/>
+      <line x1="100" y1="40" x2="195" y2="8" stroke="white" stroke-width="4"/>
+      <line x1="100" y1="40" x2="195" y2="72" stroke="white" stroke-width="4"/>
+      <circle cx="14" cy="40" r="12" fill="none" stroke="white" stroke-width="3"/>
+      <circle cx="186" cy="40" r="12" fill="none" stroke="white" stroke-width="3"/>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══════════════ BARBER BG ═══════════════ -->
+<div class="barber-bg">
+  <svg class="tool-1" width="180" height="90" viewBox="0 0 200 80" fill="white">
+    <path d="M10 20 Q50 10 100 40 Q50 70 10 60 Q4 40 10 20Z" opacity=".6"/>
+    <path d="M190 20 Q150 10 100 40 Q150 70 190 60 Q196 40 190 20Z" opacity=".6"/>
+    <line x1="100" y1="40" x2="195" y2="8" stroke="white" stroke-width="4"/>
+    <line x1="100" y1="40" x2="195" y2="72" stroke="white" stroke-width="4"/>
+    <circle cx="14" cy="40" r="12" fill="none" stroke="white" stroke-width="3"/>
+    <circle cx="186" cy="40" r="12" fill="none" stroke="white" stroke-width="3"/>
+  </svg>
+  <svg class="tool-2" width="50" height="150" viewBox="0 0 30 120" fill="white">
+    <rect x="12" y="0" width="6" height="80" rx="3"/>
+    <rect x="8" y="80" width="14" height="40" rx="7"/>
+    <rect x="6" y="75" width="18" height="8" rx="2"/>
+  </svg>
+  <svg class="tool-3" width="160" height="40" viewBox="0 0 120 30" fill="white">
+    <rect x="0" y="10" width="90" height="10" rx="5"/>
+    <rect x="90" y="5" width="30" height="20" rx="4"/>
+    <line x1="0" y1="10" x2="0" y2="20" stroke="white" stroke-width="2"/>
+  </svg>
+  <svg class="tool-4" width="60" height="140" viewBox="0 0 40 120" fill="white">
+    <ellipse cx="20" cy="15" rx="15" ry="15" fill="none" stroke="white" stroke-width="3"/>
+    <rect x="17" y="30" width="6" height="70" rx="3"/>
+    <path d="M10 100 L20 100 L30 100 Q35 120 20 120 Q5 120 10 100Z"/>
+  </svg>
+  <svg class="tool-5" width="140" height="70" viewBox="0 0 200 80" fill="white">
+    <path d="M10 20 Q50 10 100 40 Q50 70 10 60 Q4 40 10 20Z" opacity=".6"/>
+    <path d="M190 20 Q150 10 100 40 Q150 70 190 60 Q196 40 190 20Z" opacity=".6"/>
+    <line x1="100" y1="40" x2="195" y2="8" stroke="white" stroke-width="4"/>
+    <line x1="100" y1="40" x2="195" y2="72" stroke="white" stroke-width="4"/>
+    <circle cx="14" cy="40" r="12" fill="none" stroke="white" stroke-width="3"/>
+    <circle cx="186" cy="40" r="12" fill="none" stroke="white" stroke-width="3"/>
+  </svg>
+  <svg class="tool-6" width="45" height="120" viewBox="0 0 30 120" fill="white">
+    <rect x="12" y="0" width="6" height="80" rx="3"/>
+    <rect x="8" y="80" width="14" height="40" rx="7"/>
+  </svg>
+  <svg class="tool-7" width="130" height="35" viewBox="0 0 120 30" fill="white">
+    <rect x="0" y="10" width="90" height="10" rx="5"/>
+    <rect x="90" y="5" width="30" height="20" rx="4"/>
+  </svg>
+</div>
+<div class="stripe-bg"></div>
+
+<!-- ═══════════════ APP ═══════════════ -->
 <div class="shell">
 
   <!-- HEADER -->
   <div class="header">
-    <div>
-      <div class="logo-eyebrow">Est. 2010 · Premium Grooming</div>
-      <div class="logo-name">Noir <span style="color:var(--gold);">&</span> Co.</div>
+    <div class="logo">
+      <!-- SVG Logo Mark -->
+      <div class="logo-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" fill="#0A0A0A"/>
+          <rect x="1" y="1" width="46" height="46" stroke="white" stroke-width="1"/>
+          <!-- Scissors -->
+          <path d="M8 12 Q18 8 24 24 Q18 40 8 36 Q5 24 8 12Z" fill="white" opacity=".85"/>
+          <path d="M40 12 Q30 8 24 24 Q30 40 40 36 Q43 24 40 12Z" fill="white" opacity=".85"/>
+          <line x1="24" y1="24" x2="42" y2="10" stroke="#D91E18" stroke-width="2.5"/>
+          <line x1="24" y1="24" x2="42" y2="38" stroke="#D91E18" stroke-width="2.5"/>
+          <circle cx="9" cy="24" r="5" fill="none" stroke="#D91E18" stroke-width="1.5"/>
+          <circle cx="39" cy="24" r="5" fill="none" stroke="#D91E18" stroke-width="1.5"/>
+          <!-- S&M text -->
+          <text x="24" y="52" font-family="sans-serif" font-size="6" fill="white" text-anchor="middle"></text>
+        </svg>
+      </div>
+      <div class="logo-text-group">
+        <div class="logo-name">S<span class="amp">&amp;</span>M</div>
+        <div class="logo-tag">SALOON · PRECISION GROOMING</div>
+      </div>
     </div>
-    <button class="manage-btn" onclick="openManage()">Manage Booking</button>
+    <div class="header-right">
+      <div class="header-badge">OPEN NOW</div>
+      <button class="manage-btn" onclick="openManage()">MANAGE BOOKING</button>
+    </div>
   </div>
 
-  <!-- PROGRESS -->
-  <div class="progress-wrap" id="progressWrap"></div>
-  <div class="step-label" id="stepLabel"></div>
+  <!-- STEP TRACKER -->
+  <div class="step-track" id="stepTrack"></div>
 
   <!-- HEADING -->
-  <div class="step-heading">
-    <h2 id="stepTitle"></h2>
-    <p id="stepSub"></p>
+  <div class="heading-area" id="headingArea">
+    <div class="heading-eyebrow" id="headingEyebrow">Services</div>
+    <div class="heading-title" id="headingTitle">CHOOSE YOUR<br><span class="outline">TREATMENT</span></div>
+    <div class="heading-sub" id="headingSub">Select one or more services to begin</div>
   </div>
 
-  <div class="divider"><div class="div-line"></div><div class="div-diamond"></div><div class="div-line"></div></div>
-
-  <!-- STEP CONTENT -->
+  <!-- CONTENT -->
   <div class="content" id="stepContent"></div>
 
   <!-- NAV -->
@@ -217,287 +624,401 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 </div>
 
-<!-- SUCCESS OVERLAY -->
+<!-- ═══════════════ SUCCESS ═══════════════ -->
 <div class="overlay" id="successOverlay">
-  <div class="success-modal">
-    <div class="success-ring">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <div class="success-box">
+    <div class="success-top">
+      <div class="success-checkmark">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title">BOOKING CONFIRMED</div>
     </div>
-    <div class="success-title">Appointment Confirmed</div>
-    <div class="success-sub">Your reservation has been secured.<br>We look forward to welcoming you.</div>
-    <div class="success-id" id="bookingIdDisplay"></div>
-    <div class="ornament">· · ✦ · ·</div>
-    <button class="success-close" onclick="closeSuccess()">Close & Return</button>
+    <div class="success-bottom">
+      <div class="success-sub">Your seat is reserved at S&M Saloon.<br>We'll see you soon — come in looking good.</div>
+      <div class="success-id" id="bookingIdDisplay">Confirmation secured</div>
+      <div class="success-divider">
+        <div class="success-divider-line"></div>
+        <div class="success-divider-scissors">✂</div>
+        <div class="success-divider-line"></div>
+      </div>
+      <button class="success-close" onclick="closeSuccess()">CLOSE & RETURN</button>
+    </div>
   </div>
 </div>
 
-<!-- MANAGE OVERLAY -->
+<!-- ═══════════════ MANAGE ═══════════════ -->
 <div class="overlay" id="manageOverlay">
-  <div class="manage-modal">
-    <div class="manage-title">Manage Reservation</div>
-    <div class="manage-sub">Enter your phone number to access your booking</div>
-
-    <div class="form-group">
+  <div class="manage-box">
+    <div class="manage-title">MANAGE BOOKING</div>
+    <div class="manage-sub">Enter your phone number to access your reservation</div>
+    <div class="form-group" style="margin-bottom:12px">
       <label class="form-label">Phone Number</label>
-      <input class="form-input" id="mPhone" placeholder="+1 (000) 000-0000" />
+      <input class="form-input" id="mPhone" placeholder="+1 (000) 000-0000"/>
     </div>
-    <button class="btn btn-next" style="width:100%;margin-bottom:14px" onclick="searchBooking()">
-      <span id="searchBtnText">Search Booking</span>
+    <button class="btn btn-next" style="width:100%;margin-bottom:16px" onclick="searchBooking()">
+      <span id="searchBtnText">SEARCH BOOKING</span>
     </button>
-
     <div id="bookingResults"></div>
-
-    <!-- Reschedule panel -->
     <div class="resched-panel" id="reschedPanel">
       <div class="form-group" style="margin-bottom:10px">
-        <label class="form-label">New Date (e.g. May 20, 2025)</label>
-        <input class="form-input" id="rNewDate" placeholder="May 20, 2025"/>
+        <label class="form-label">New Date</label>
+        <input class="form-input" id="rNewDate" placeholder="e.g. May 20, 2025"/>
       </div>
-      <div class="form-group" style="margin-bottom:10px">
-        <label class="form-label">New Time (e.g. 3:00 PM)</label>
-        <input class="form-input" id="rNewTime" placeholder="3:00 PM"/>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">New Time</label>
+        <input class="form-input" id="rNewTime" placeholder="e.g. 3:00 PM"/>
       </div>
-      <button class="resched-submit" onclick="doReschedule()">Confirm Reschedule</button>
+      <button class="resched-submit" onclick="doReschedule()">CONFIRM RESCHEDULE</button>
     </div>
-
     <div class="manage-actions" id="manageActions" style="display:none">
-      <button class="ma-btn" onclick="toggleResched()">↺ Reschedule</button>
-      <button class="ma-btn danger" onclick="doCancel()">✕ Cancel Booking</button>
+      <button class="ma-btn" onclick="toggleResched()">↺ RESCHEDULE</button>
+      <button class="ma-btn danger" onclick="doCancel()">✕ CANCEL</button>
     </div>
-    <button class="ma-close" onclick="closeManage()">Close</button>
+    <button class="ma-close" onclick="closeManage()">CLOSE</button>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- ═══════════════ TOAST ═══════════════ -->
 <div class="toast" id="toast"></div>
 
+<!-- ═══════════════ FAQ ═══════════════ -->
+<button class="faq-fab" id="faqFab" onclick="toggleFaq()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 9a3 3 0 1 1 5.12 2.12C13 12 12 12.5 12 14"/><circle cx="12" cy="18" r=".5" fill="currentColor"/></svg>
+  <div class="faq-fab-label">FAQ</div>
+</button>
+
+<div class="faq-panel" id="faqPanel">
+  <div class="faq-head">
+    <div class="faq-head-title">QUESTIONS? ✂</div>
+    <div class="faq-head-sub">Everything you need to know</div>
+  </div>
+  <div class="faq-scroll" id="faqList"></div>
+</div>
+
 <script>
-const API = "https://script.google.com/macros/s/AKfycbw7iPBdMkuh-BQX0EloScLhTwioPXz9ekp3R9rB4fNnjNNtE3ohDCieESaDNWMIBXsMVQ/exec";
+// ── CURSOR ────────────────────────────────────────────────────────
+const cur=document.getElementById("cursor"),ring=document.getElementById("cursor-ring");
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener("mousemove",e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+"px";cur.style.top=my+"px"});
+(function animRing(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;ring.style.left=rx+"px";ring.style.top=ry+"px";requestAnimationFrame(animRing)})();
+document.querySelectorAll("button,a,.svc-tile,.sty-row,.cal-d,.t-slot,.faq-q").forEach(el=>{
+  el.addEventListener("mouseenter",()=>document.body.classList.add("cursor-grow"));
+  el.addEventListener("mouseleave",()=>document.body.classList.remove("cursor-grow"));
+});
 
-// ── DATA ─────────────────────────────────────────────────────────
-const SERVICES = [
-  {
-    id:1, name:"Haircut", desc:"Precision cut & finish by a master barber", price:25,
-    img:"https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=200&q=80&fit=crop"
-  },
-  {
-    id:2, name:"Beard Trim", desc:"Expert sculpt, shape & hot-towel finish", price:15,
-    img:"https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=200&q=80&fit=crop"
-  },
-  {
-    id:3, name:"Facial", desc:"Luxury deep-cleanse skin treatment", price:40,
-    img:"https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=200&q=80&fit=crop"
-  }
+// ── LOADER ────────────────────────────────────────────────────────
+window.addEventListener("load",()=>{
+  setTimeout(()=>{
+    const l=document.getElementById("loader");
+    l.classList.add("out");
+    setTimeout(()=>l.style.display="none",700);
+  },2200);
+});
+
+// ── API ───────────────────────────────────────────────────────────
+const API="https://script.google.com/macros/s/AKfycbw7iPBdMkuh-BQX0EloScLhTwioPXz9ekp3R9rB4fNnjNNtE3ohDCieESaDNWMIBXsMVQ/exec";
+const api=async body=>{const r=await fetch(API,{method:"POST",body:JSON.stringify(body)});return r.json()};
+
+// ── DATA ──────────────────────────────────────────────────────────
+const SERVICES=[
+  {id:1,name:"Classic Haircut",desc:"Precision cut tailored to your face shape",price:25,wide:false,img:"https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=80&fit=crop"},
+  {id:2,name:"Beard Trim",desc:"Shape, edge & hot-towel finish",price:15,wide:false,img:"https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400&q=80&fit=crop"},
+  {id:3,name:"Skin Fade",desc:"Ultra-clean taper from skin to length",price:30,wide:false,img:"https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=80&fit=crop"},
+  {id:4,name:"Full Shave",desc:"Traditional straight razor shave with warm lather",price:35,wide:false,img:"https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&q=80&fit=crop"},
+  {id:5,name:"Facial Treatment",desc:"Deep cleanse, exfoliate & hydration mask",price:40,wide:false,img:"https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&q=80&fit=crop"},
+  {id:6,name:"Cut & Beard Combo",desc:"Full cut plus sculpted beard styling",price:38,wide:false,img:"https://images.unsplash.com/photo-1567894340315-735d7c361db0?w=400&q=80&fit=crop"},
+  {id:7,name:"Hair Wash & Style",desc:"Premium shampoo, blow-dry & product finish",price:20,wide:false,img:"https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80&fit=crop"},
+  {id:8,name:"VIP Package",desc:"Cut + Shave + Facial + Complimentary drink",price:90,wide:true,img:"https://images.unsplash.com/photo-1493256338651-d82f7acb2b38?w=800&q=80&fit=crop"},
 ];
 
-const STYLISTS = [
-  {
-    id:1, name:"James Walker", role:"Master Stylist · 12 yrs", stars:"★★★★★", senior:true,
-    img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&fit=crop&face"
-  },
-  {
-    id:2, name:"Michael Ross", role:"Senior Artisan · 8 yrs", stars:"★★★★☆", senior:false,
-    img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&fit=crop&face"
-  }
+const STYLISTS=[
+  {id:1,name:"Marcus Steel",role:"Master Barber · 14 yrs exp",stars:5,tag:"TOP RATED",img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&fit=crop"},
+  {id:2,name:"James Cole",role:"Senior Stylist · 9 yrs exp",stars:5,tag:"PREFERRED",img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&fit=crop"},
+  {id:3,name:"Andre Vega",role:"Fade Specialist · 7 yrs exp",stars:4,tag:"SPECIALIST",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80&fit=crop"},
+  {id:4,name:"Daniel Park",role:"Style Artisan · 6 yrs exp",stars:4,tag:"",img:"https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=200&q=80&fit=crop"},
+  {id:5,name:"Ray Monroe",role:"Junior Stylist · 3 yrs exp",stars:4,tag:"",img:"https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&q=80&fit=crop"},
 ];
 
-const TIMES = ["10:00 AM","11:00 AM","1:00 PM","3:00 PM","5:00 PM"];
-const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const SHORT_M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const TIMES=["9:00 AM","10:00 AM","11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM"];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SHORT_M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ── STATE ────────────────────────────────────────────────────────
-let step = 1;
-let selServices = [];
-let selStylist  = null;
-let selDate     = null;
-let selTime     = "";
-let userName    = "";
-let userPhone   = "";
-let calYear, calMonth;
-const now = new Date();
-calYear  = now.getFullYear();
-calMonth = now.getMonth();
+// ── FAQS ─────────────────────────────────────────────────────────
+const FAQS=[
+  {q:"How far in advance should I book?",a:"We recommend booking at least 48 hours ahead to get your preferred barber and time. For weekends, book 4–5 days in advance as slots fill fast."},
+  {q:"Can I book multiple services at once?",a:"Yes! You can combine any services in a single booking — prices and session time add up automatically. Perfect for a full grooming experience."},
+  {q:"What is the cancellation policy?",a:"Free cancellation up to 24 hours before your appointment. Within 24 hours, a 50% no-show fee applies to keep things fair for all clients."},
+  {q:"How do I reschedule my appointment?",a:"Click 'Manage Booking' at the top, enter your phone number, and hit Reschedule. Pick your new date and time and confirm — takes 30 seconds."},
+  {q:"Do you accept walk-ins?",a:"Limited walk-in spots may be available. We suggest calling ahead to check same-day availability, as we prioritize booked clients to minimize wait times."},
+  {q:"What products do you use?",a:"S&M Saloon uses premium grooming lines including American Crew, Uppercut Deluxe, and Baxter of California. Ask your barber for a personalized recommendation."},
+  {q:"Is parking available?",a:"Yes — free street parking is available on both sides of the block. Paid lot parking is also 2 minutes away for peak hours."},
+  {q:"Do you sell gift vouchers?",a:"Absolutely. Gift vouchers are available for any amount in-store. They make great gifts for any occasion and never expire."},
+  {q:"How long does each service take?",a:"Haircut: ~40 min. Beard Trim: ~25 min. Skin Fade: ~50 min. Full Shave: ~45 min. Facial: ~60 min. VIP Package: ~2 hours."},
+  {q:"Can I choose my barber?",a:"Yes — Step 2 of the booking lets you select your preferred barber. If they're unavailable at your time, you'll see their next open slot."},
+  {q:"What if I'm running late?",a:"Please call or text us right away. We hold your chair for 10 minutes. After that, your spot may be given to a walk-in to respect other clients."},
+  {q:"Is my personal data safe?",a:"Your booking info is encrypted and stored securely. We do not sell or share your details with third parties — ever."},
+  {q:"Do you offer a loyalty program?",a:"Yes! The S&M Club offers points per visit, redeemable for free services. Ask in-store to sign up — it's free to join."},
+  {q:"Can I book as a gift for someone?",a:"Absolutely. Enter the recipient's name and your phone number. Let us know it's a gift in any notes field and we'll prepare a special welcome."},
+  {q:"What payment methods do you accept?",a:"We accept all major credit and debit cards, Apple Pay, Google Pay, and cash. Payment is taken in-store after your service."},
+];
 
-const STEP_LABELS = ["","Step 1 of 5 — Services","Step 2 of 5 — Stylist","Step 3 of 5 — Date","Step 4 of 5 — Time","Step 5 of 5 — Details"];
-const STEP_TITLES = ["","Choose your services","Select your artisan","Pick a date","Choose a time","Your details"];
-const STEP_SUBS   = ["","Select one or more treatments","Your experience, tailored by the best","Find your perfect moment","Secure your preferred time","Complete your reservation"];
+// ── STATE ─────────────────────────────────────────────────────────
+let step=1,selServices=[],selStylist=null,selDate=null,selTime="",userName="",userPhone="";
+const now=new Date();
+let calYear=now.getFullYear(),calMonth=now.getMonth();
 
-// ── HELPERS ──────────────────────────────────────────────────────
-const api = async body => {
-  const r = await fetch(API, {method:"POST", body:JSON.stringify(body)});
-  return r.json();
-};
+const STEP_NODES=[
+  {label:"Services"},
+  {label:"Barber"},
+  {label:"Date"},
+  {label:"Time"},
+  {label:"Details"},
+];
+const EYEBROWS=["","STEP 01 — SERVICES","STEP 02 — BARBER","STEP 03 — DATE","STEP 04 — TIME","STEP 05 — DETAILS"];
+const TITLES=[
+  "",
+  "CHOOSE YOUR\n<span class='outline'>TREATMENT</span>",
+  "PICK YOUR\n<span class='outline'>BARBER</span>",
+  "SELECT\n<span class='outline'>A DATE</span>",
+  "BOOK YOUR\n<span class='outline'>TIME SLOT</span>",
+  "ALMOST\n<span class='outline'>THERE</span>",
+];
+const SUBS=[
+  "",
+  "Select one or more services to begin",
+  "Your experience, your choice of artisan",
+  "Choose a date that works for you",
+  "Pick your preferred appointment time",
+  "Review & confirm your reservation",
+];
 
-const toast = (msg, dur=3000) => {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"), dur);
-};
+// ── HELPERS ───────────────────────────────────────────────────────
+const toast=(msg,dur=3200)=>{const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),dur)};
+const total=()=>selServices.reduce((a,b)=>a+b.price,0);
 
-const total = () => selServices.reduce((a,b)=>a+b.price,0);
+// ── FAQ ───────────────────────────────────────────────────────────
+let faqOpen=false;
+function buildFaq(){
+  document.getElementById("faqList").innerHTML=FAQS.map((f,i)=>`
+    <div class="faq-item" id="faq${i}">
+      <button class="faq-q" onclick="toggleFaqItem(${i})">
+        <span>${f.q}</span>
+        <span class="faq-icon-btn">+</span>
+      </button>
+      <div class="faq-a"><div class="faq-a-text">${f.a}</div></div>
+    </div>`).join("");
+}
+function toggleFaq(){
+  faqOpen=!faqOpen;
+  document.getElementById("faqPanel").classList.toggle("open",faqOpen);
+}
+function toggleFaqItem(i){
+  document.querySelectorAll(".faq-item").forEach((el,j)=>{if(j!==i)el.classList.remove("open")});
+  document.getElementById("faq"+i).classList.toggle("open");
+}
+document.addEventListener("click",e=>{
+  const fab=document.getElementById("faqFab"),panel=document.getElementById("faqPanel");
+  if(faqOpen&&!panel.contains(e.target)&&!fab.contains(e.target)){faqOpen=false;panel.classList.remove("open");}
+});
 
 // ── RENDER ────────────────────────────────────────────────────────
 function render(){
-  updateProgress();
-  const c = document.getElementById("stepContent");
-  c.innerHTML=""; c.className="content step-in";
-
-  if(step===1) renderServices(c);
-  else if(step===2) renderStylists(c);
-  else if(step===3) renderCalendar(c);
-  else if(step===4) renderTimes(c);
-  else if(step===5) renderInfo(c);
-
+  updateMeta();
+  const c=document.getElementById("stepContent");
+  c.innerHTML="";c.className="content step-animate";
+  if(step===1)renderServices(c);
+  else if(step===2)renderStylists(c);
+  else if(step===3)renderCalendar(c);
+  else if(step===4)renderTimes(c);
+  else if(step===5)renderInfo(c);
   renderNav();
+  // re-bind cursor hover
+  setTimeout(()=>{
+    document.querySelectorAll("button,.svc-tile,.sty-row,.cal-d,.t-slot,.faq-q").forEach(el=>{
+      el.addEventListener("mouseenter",()=>document.body.classList.add("cursor-grow"));
+      el.addEventListener("mouseleave",()=>document.body.classList.remove("cursor-grow"));
+    });
+  },50);
 }
 
-function updateProgress(){
-  const pw = document.getElementById("progressWrap");
-  pw.innerHTML = [1,2,3,4,5].map(i=>`<div class="seg${i<step?" done":i===step?" active":""}"></div>`).join("");
-  document.getElementById("stepLabel").textContent = STEP_LABELS[step];
-  document.getElementById("stepTitle").textContent = STEP_TITLES[step];
-  document.getElementById("stepSub").textContent   = STEP_SUBS[step];
+function updateMeta(){
+  // Step track
+  const track=document.getElementById("stepTrack");
+  track.innerHTML=STEP_NODES.map((n,i)=>{
+    const s=i+1;
+    const cls=s<step?"done":s===step?"active":"";
+    return`<div class="step-node ${cls}">
+      <div class="step-node-num">${s<step?"✓":s}</div>
+      <div class="step-node-label">${n.label}</div>
+      <div class="step-tick"></div>
+    </div>`;
+  }).join("");
+  document.getElementById("headingEyebrow").textContent=EYEBROWS[step];
+  document.getElementById("headingTitle").innerHTML=TITLES[step].replace("\n","<br>");
+  document.getElementById("headingSub").textContent=SUBS[step];
 }
 
-// ── STEP 1: SERVICES ─────────────────────────────────────────────
+// ── STEP 1 ────────────────────────────────────────────────────────
 function renderServices(c){
-  const g = document.createElement("div"); g.className="services-grid";
-  SERVICES.forEach((s,i)=>{
-    const active = selServices.find(x=>x.id===s.id);
-    const d = document.createElement("div");
-    d.className = "service-card" + (active?" selected":"");
-    d.innerHTML = `
-      <img class="svc-img" src="${s.img}" alt="${s.name}" loading="lazy"/>
-      <div class="svc-body">
-        <div class="svc-num">0${i+1}</div>
-        <div class="svc-name">${s.name}</div>
-        <div class="svc-desc">${s.desc}</div>
+  const g=document.createElement("div");g.className="svc-scroll-wrap";
+  SERVICES.forEach(s=>{
+    const sel=!!selServices.find(x=>x.id===s.id);
+    const d=document.createElement("div");
+    d.className="svc-tile"+(s.wide?" wide":"")+(sel?" selected":"");
+    d.innerHTML=`
+      <img class="svc-tile-img" src="${s.img}" alt="${s.name}" loading="lazy" style="${s.wide?"height:140px":""}"/>
+      <div class="svc-tile-body">
+        <div class="svc-tile-num">SERVICE ${String(s.id).padStart(2,"0")}</div>
+        <div class="svc-tile-name">${s.name}</div>
+        <div class="svc-tile-desc">${s.desc}</div>
       </div>
-      <div class="svc-right">
-        <div class="svc-price"><sup>$</sup>${s.price}</div>
-        <div class="svc-check">
-          <svg class="check-svg" width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#0A0908" stroke-width="2" stroke-linecap="round"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>
+      <div class="svc-tile-foot">
+        <div class="svc-tile-price"><sup>$</sup>${s.price}</div>
+        <div class="svc-tile-check">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>
         </div>
       </div>`;
-    d.onclick = ()=>{
-      const idx = selServices.findIndex(x=>x.id===s.id);
-      if(idx>=0) selServices.splice(idx,1); else selServices.push(s);
+    d.onclick=()=>{
+      const idx=selServices.findIndex(x=>x.id===s.id);
+      if(idx>=0)selServices.splice(idx,1);else selServices.push(s);
       render();
     };
     g.appendChild(d);
   });
   c.appendChild(g);
+  if(selServices.length>0){
+    const t=document.createElement("div");
+    t.style.cssText="margin-top:14px;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.2em;color:var(--wht4);display:flex;align-items:center;gap:10px";
+    t.innerHTML=`<span style="color:var(--red)">✂</span> ${selServices.length} selected &nbsp;·&nbsp; Total: <span style="color:var(--wht);margin-left:4px">$${total()}</span>`;
+    c.appendChild(t);
+  }
 }
 
-// ── STEP 2: STYLISTS ─────────────────────────────────────────────
+// ── STEP 2 ────────────────────────────────────────────────────────
 function renderStylists(c){
-  const g = document.createElement("div"); g.className="stylists-grid";
-  STYLISTS.forEach(s=>{
-    const d = document.createElement("div");
-    d.className="stylist-card"+(selStylist?.id===s.id?" selected":"");
+  const g=document.createElement("div");g.className="sty-grid";
+  STYLISTS.forEach((s,i)=>{
+    const sel=selStylist?.id===s.id;
+    const d=document.createElement("div");
+    d.className="sty-row"+(sel?" selected":"");
+    d.style.animationDelay=(i*.07)+"s";
     d.innerHTML=`
-      <img class="stylist-img" src="${s.img}" alt="${s.name}" loading="lazy"/>
-      <div class="stylist-body">
-        <div class="stylist-name">${s.name}</div>
-        <div class="stylist-role">${s.role}</div>
-        <div class="stylist-stars">${s.stars}</div>
+      <div class="sty-num">${String(i+1).padStart(2,"0")}</div>
+      <div class="sty-img-wrap"><img class="sty-img" src="${s.img}" alt="${s.name}" loading="lazy"/></div>
+      <div class="sty-body">
+        <div class="sty-name">${s.name}</div>
+        <div class="sty-role">${s.role}</div>
+        <div class="sty-stars-row">${[1,2,3,4,5].map(x=>`<span class="sty-star ${x<=s.stars?"on":""}">★</span>`).join("")}</div>
       </div>
-      ${s.senior?'<div class="stylist-badge">Preferred</div>':''}`;
+      <div class="sty-right">
+        ${s.tag?`<div class="sty-tag">${s.tag}</div>`:`<div></div>`}
+        <div class="sty-arrow">→</div>
+      </div>`;
     d.onclick=()=>{selStylist=s;render();};
     g.appendChild(d);
   });
   c.appendChild(g);
 }
 
-// ── STEP 3: CALENDAR ─────────────────────────────────────────────
+// ── STEP 3 ────────────────────────────────────────────────────────
 function renderCalendar(c){
-  const firstDay = new Date(calYear,calMonth,1).getDay();
-  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
-  const todD=now.getDate(), todM=now.getMonth(), todY=now.getFullYear();
-
-  let rows = `<div class="cal-day-name">Su</div><div class="cal-day-name">Mo</div><div class="cal-day-name">Tu</div><div class="cal-day-name">We</div><div class="cal-day-name">Th</div><div class="cal-day-name">Fr</div><div class="cal-day-name">Sa</div>`;
-  for(let i=0;i<firstDay;i++) rows+=`<div class="cal-day empty"></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const past=(calYear<todY)||(calYear===todY&&calMonth<todM)||(calYear===todY&&calMonth===todM&&d<todD);
-    const isToday=d===todD&&calMonth===todM&&calYear===todY;
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const tD=now.getDate(),tM=now.getMonth(),tY=now.getFullYear();
+  const days=["Su","Mo","Tu","We","Th","Fr","Sa"];
+  let rows=days.map(d=>`<div class="cal-dn">${d}</div>`).join("");
+  for(let i=0;i<firstDay;i++)rows+=`<div class="cal-d empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const past=(calYear<tY)||(calYear===tY&&calMonth<tM)||(calYear===tY&&calMonth===tM&&d<tD);
+    const isTod=d===tD&&calMonth===tM&&calYear===tY;
     const isSel=selDate&&d===selDate.d&&calMonth===selDate.m&&calYear===selDate.y;
-    let cls="cal-day";
-    if(past)cls+=" past";
-    if(isToday)cls+=" today";
-    if(isSel)cls+=" selected";
-    rows+=`<div class="${cls}" onclick="pickDay(${d})">${d}</div>`;
+    rows+=`<div class="cal-d${past?" past":""}${isTod?" today":""}${isSel?" selected":""}" onclick="pickDay(${d})">${d}</div>`;
   }
-
-  const wrap=document.createElement("div");
-  wrap.className="calendar";
-  wrap.innerHTML=`
+  const w=document.createElement("div");w.className="cal-outer";
+  w.innerHTML=`
     <div class="cal-header">
-      <button class="cal-nav" onclick="prevMonth()">&#8592;</button>
-      <span class="cal-month">${MONTHS[calMonth]} ${calYear}</span>
-      <button class="cal-nav" onclick="nextMonth()">&#8594;</button>
+      <button class="cal-nav" onclick="prevMonth()">←</button>
+      <span class="cal-month-name">${MONTHS[calMonth].toUpperCase()} ${calYear}</span>
+      <button class="cal-nav" onclick="nextMonth()">→</button>
     </div>
     <div class="cal-grid">${rows}</div>`;
-  c.appendChild(wrap);
+  c.appendChild(w);
 }
-
-window.prevMonth=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}render();};
-window.nextMonth=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}render();};
-window.pickDay=(d)=>{
-  const now2=new Date();
-  const past=(calYear<now2.getFullYear())||(calYear===now2.getFullYear()&&calMonth<now2.getMonth())||(calYear===now2.getFullYear()&&calMonth===now2.getMonth()&&d<now2.getDate());
+window.prevMonth=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}render()};
+window.nextMonth=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}render()};
+window.pickDay=d=>{
+  const n2=new Date();
+  const past=(calYear<n2.getFullYear())||(calYear===n2.getFullYear()&&calMonth<n2.getMonth())||(calYear===n2.getFullYear()&&calMonth===n2.getMonth()&&d<n2.getDate());
   if(past)return;
   selDate={d,m:calMonth,y:calYear};render();
 };
 
-// ── STEP 4: TIMES ────────────────────────────────────────────────
+// ── STEP 4 ────────────────────────────────────────────────────────
 function renderTimes(c){
-  const g=document.createElement("div"); g.className="times-grid";
-  TIMES.forEach(t=>{
-    const [hm,period]=t.split(" ");
-    const slot=document.createElement("div");
-    slot.className="time-slot"+(selTime===t?" selected":"");
-    slot.innerHTML=`${hm}<span class="time-period">${period}</span>`;
-    slot.onclick=()=>{selTime=t;render();};
-    g.appendChild(slot);
+  const lbl=document.createElement("div");lbl.className="time-section-label";
+  lbl.innerHTML=selDate?`${MONTHS[selDate.m]} ${selDate.d}, ${selDate.y} — Available Slots`:"Available Slots";
+  c.appendChild(lbl);
+  const g=document.createElement("div");g.className="times-grid";
+  TIMES.forEach((t,i)=>{
+    const[hm,period]=t.split(" ");
+    const sl=document.createElement("div");
+    sl.className="t-slot"+(selTime===t?" selected":"");
+    sl.style.animationDelay=(i*.04)+"s";
+    sl.innerHTML=`<span class="t-time">${hm}</span><span class="t-period">${period}</span>`;
+    sl.onclick=()=>{selTime=t;render();};
+    g.appendChild(sl);
   });
   c.appendChild(g);
 }
 
-// ── STEP 5: INFO ─────────────────────────────────────────────────
+// ── STEP 5 ────────────────────────────────────────────────────────
 function renderInfo(c){
   const ds=selDate?`${SHORT_M[selDate.m]} ${selDate.d}, ${selDate.y}`:"—";
   c.innerHTML=`
-    <div class="summary-box">
-      <div class="sum-row"><span>Services</span><span>${selServices.map(s=>s.name).join(", ")||"—"}</span></div>
-      <div class="sum-row"><span>Stylist</span><span>${selStylist?.name||"—"}</span></div>
-      <div class="sum-row"><span>Date & Time</span><span>${ds} · ${selTime||"—"}</span></div>
-      <div class="sum-row total"><span>Total</span><span class="sum-total">$${total()}</span></div>
+    <div class="summary-grid" style="animation:tileIn .4s both">
+      <div class="sum-cell">
+        <div class="sum-label">Services</div>
+        <div class="sum-val">${selServices.map(s=>s.name).join(", ")||"—"}</div>
+      </div>
+      <div class="sum-cell">
+        <div class="sum-label">Barber</div>
+        <div class="sum-val">${selStylist?.name||"—"}</div>
+      </div>
+      <div class="sum-cell">
+        <div class="sum-label">Date</div>
+        <div class="sum-val">${ds}</div>
+      </div>
+      <div class="sum-cell">
+        <div class="sum-label">Time</div>
+        <div class="sum-val">${selTime||"—"}</div>
+      </div>
+      <div class="sum-cell full">
+        <div class="sum-label">Total Due</div>
+        <div class="sum-total-num"><sup>$</sup>${total()}</div>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Full Name</label>
-      <input class="form-input" id="fName" placeholder="Your full name" value="${userName}" oninput="userName=this.value;updateConfirm()"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Phone Number</label>
-      <input class="form-input" id="fPhone" placeholder="+1 (000) 000-0000" value="${userPhone}" oninput="userPhone=this.value;updateConfirm()"/>
+    <div class="form-group-wrap" style="animation:tileIn .4s .1s both">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="fName" placeholder="Your name" value="${userName}" oninput="userName=this.value;updateConfirm()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input class="form-input" id="fPhone" placeholder="+1 (000) 000-0000" value="${userPhone}" oninput="userPhone=this.value;updateConfirm()"/>
+      </div>
     </div>`;
 }
+window.updateConfirm=()=>{const b=document.getElementById("confirmBtn");if(b)b.disabled=!userName.trim()||!userPhone.trim()};
 
-window.updateConfirm=()=>{
-  const btn=document.getElementById("confirmBtn");
-  if(btn) btn.disabled=!userName.trim()||!userPhone.trim();
-};
-
-// ── NAV ──────────────────────────────────────────────────────────
+// ── NAV ───────────────────────────────────────────────────────────
 function renderNav(){
-  const nav=document.getElementById("navWrap");
-  nav.innerHTML="";
+  const nav=document.getElementById("navWrap");nav.innerHTML="";
   if(step>1){
-    const b=document.createElement("button");b.className="btn btn-back";b.textContent="← Back";
+    const b=document.createElement("button");b.className="btn btn-back";b.textContent="← BACK";
     b.onclick=()=>{step--;render();};nav.appendChild(b);
   }
   if(step<5){
-    const n=document.createElement("button");n.className="btn btn-next";n.textContent="Continue →";
+    const n=document.createElement("button");n.className="btn btn-next";n.textContent="CONTINUE →";
     if(step===1&&selServices.length===0)n.disabled=true;
     if(step===2&&!selStylist)n.disabled=true;
     if(step===3&&!selDate)n.disabled=true;
@@ -505,52 +1026,28 @@ function renderNav(){
     n.onclick=()=>{step++;render();};nav.appendChild(n);
   }
   if(step===5){
-    const cf=document.createElement("button");
-    cf.className="btn btn-confirm";cf.id="confirmBtn";
-    cf.textContent="Confirm Reservation";
-    cf.disabled=!userName.trim()||!userPhone.trim();
+    const cf=document.createElement("button");cf.className="btn btn-confirm";cf.id="confirmBtn";
+    cf.textContent="CONFIRM BOOKING";cf.disabled=!userName.trim()||!userPhone.trim();
     cf.onclick=bookAppointment;nav.appendChild(cf);
   }
 }
 
-// ── BOOK ─────────────────────────────────────────────────────────
+// ── BOOK ──────────────────────────────────────────────────────────
 async function bookAppointment(){
-  const btn=document.getElementById("confirmBtn");
-  if(!btn)return;
-  btn.disabled=true;
-  btn.innerHTML=`<span class="spinner"></span>Booking...`;
-
+  const btn=document.getElementById("confirmBtn");if(!btn)return;
+  btn.disabled=true;btn.innerHTML=`<span class="spinner"></span>SECURING...`;
   const ds=`${SHORT_M[selDate.m]} ${selDate.d}, ${selDate.y}`;
   try{
-    const res=await api({
-      action:"book",
-      name:userName.trim(),
-      phone:userPhone.trim(),
-      service:selServices.map(s=>s.name).join(", "),
-      stylist:selStylist.name,
-      date:ds,
-      time:selTime,
-      price:total()
-    });
+    const res=await api({action:"book",name:userName.trim(),phone:userPhone.trim(),service:selServices.map(s=>s.name).join(", "),stylist:selStylist.name,date:ds,time:selTime,price:total()});
     if(res.success){
-      document.getElementById("bookingIdDisplay").textContent = res.id ? `Booking ID: ${res.id}` : "";
+      document.getElementById("bookingIdDisplay").textContent=res.id?`Booking ID: ${res.id}`:"Booking confirmed ✂";
       document.getElementById("successOverlay").classList.add("open");
-    } else {
-      toast("⚠ "+res.message);
-      btn.disabled=false;btn.textContent="Confirm Reservation";
-    }
-  }catch(e){
-    toast("Network error. Please try again.");
-    btn.disabled=false;btn.textContent="Confirm Reservation";
-  }
+    }else{toast("⚠ "+res.message);btn.disabled=false;btn.textContent="CONFIRM BOOKING";}
+  }catch(e){toast("Network error — please try again.");btn.disabled=false;btn.textContent="CONFIRM BOOKING";}
 }
+function closeSuccess(){document.getElementById("successOverlay").classList.remove("open");setTimeout(()=>location.reload(),350)}
 
-function closeSuccess(){
-  document.getElementById("successOverlay").classList.remove("open");
-  setTimeout(()=>location.reload(),300);
-}
-
-// ── MANAGE ───────────────────────────────────────────────────────
+// ── MANAGE ────────────────────────────────────────────────────────
 function openManage(){
   document.getElementById("manageOverlay").classList.add("open");
   document.getElementById("bookingResults").innerHTML="";
@@ -558,88 +1055,64 @@ function openManage(){
   document.getElementById("reschedPanel").classList.remove("open");
   document.getElementById("mPhone").value="";
 }
-function closeManage(){
-  document.getElementById("manageOverlay").classList.remove("open");
-}
+function closeManage(){document.getElementById("manageOverlay").classList.remove("open")}
 
 async function searchBooking(){
   const phone=document.getElementById("mPhone").value.trim();
-  if(!phone){toast("Please enter your phone number.");return;}
+  if(!phone){toast("Enter your phone number first.");return;}
   const btn=document.getElementById("searchBtnText");
-  btn.innerHTML=`<span class="spinner"></span>Searching...`;
+  btn.innerHTML=`<span class="spinner"></span>SEARCHING...`;
   try{
     const res=await api({action:"getBooking",phone});
-    btn.textContent="Search Booking";
+    btn.textContent="SEARCH BOOKING";
     const results=document.getElementById("bookingResults");
     const actions=document.getElementById("manageActions");
     if(res.success&&res.bookings&&res.bookings.length>0){
       results.innerHTML=res.bookings.map(b=>`
         <div class="booking-card">
-          <div class="booking-svc">${b.service}</div>
-          <div class="booking-meta">
-            👤 ${b.name}<br>
-            ✂️ ${b.stylist}<br>
-            📅 ${b.date} · ${b.time}<br>
-            💰 $${b.price}
+          <div class="bc-svc">${b.service}</div>
+          <div class="bc-meta">
+            👤 ${b.name} &nbsp;·&nbsp; ✂ ${b.stylist}<br>
+            📅 ${b.date} &nbsp;·&nbsp; 🕐 ${b.time}<br>
+            💵 $${b.price}
           </div>
         </div>`).join("");
       actions.style.display="flex";
-    } else {
-      results.innerHTML=`<div style="font-size:12px;color:var(--muted);padding:10px 0">No active booking found for this number.</div>`;
+    }else{
+      results.innerHTML=`<div style="font-family:'Barlow',sans-serif;font-size:12px;color:var(--wht4);padding:10px 0">No booking found for this number.</div>`;
       actions.style.display="none";
     }
-  }catch(e){
-    btn.textContent="Search Booking";
-    toast("Network error. Please try again.");
-  }
+  }catch(e){btn.textContent="SEARCH BOOKING";toast("Network error — please try again.");}
 }
-
-function toggleResched(){
-  const p=document.getElementById("reschedPanel");
-  p.classList.toggle("open");
-}
-
+function toggleResched(){document.getElementById("reschedPanel").classList.toggle("open")}
 async function doReschedule(){
   const phone=document.getElementById("mPhone").value.trim();
   const date=document.getElementById("rNewDate").value.trim();
   const time=document.getElementById("rNewTime").value.trim();
-  if(!phone||!date||!time){toast("Please fill in all fields.");return;}
+  if(!phone||!date||!time){toast("Fill in all fields.");return;}
   try{
     const res=await api({action:"reschedule",phone,date,time});
-    if(res.success){
-      toast("✓ "+res.message,4000);
-      document.getElementById("reschedPanel").classList.remove("open");
-      document.getElementById("rNewDate").value="";
-      document.getElementById("rNewTime").value="";
-      await searchBooking();
-    } else {
-      toast("⚠ "+res.message,4000);
-    }
-  }catch(e){
-    toast("Network error. Please try again.");
-  }
+    if(res.success){toast("✓ "+res.message,4000);document.getElementById("reschedPanel").classList.remove("open");document.getElementById("rNewDate").value="";document.getElementById("rNewTime").value="";await searchBooking();}
+    else toast("⚠ "+res.message,4000);
+  }catch(e){toast("Network error — please try again.");}
 }
-
 async function doCancel(){
   const phone=document.getElementById("mPhone").value.trim();
-  if(!phone){toast("Please search your booking first.");return;}
-  if(!confirm("Are you sure you want to cancel your appointment?"))return;
+  if(!phone){toast("Search your booking first.");return;}
+  if(!confirm("Cancel this appointment?"))return;
   try{
     const res=await api({action:"cancel",phone});
     if(res.success){
       toast("✓ "+res.message,4000);
-      document.getElementById("bookingResults").innerHTML=`<div style="font-size:12px;color:var(--muted);padding:10px 0">Your booking has been cancelled.</div>`;
+      document.getElementById("bookingResults").innerHTML=`<div style="font-family:'Barlow',sans-serif;font-size:12px;color:var(--wht4);padding:10px 0">Booking cancelled.</div>`;
       document.getElementById("manageActions").style.display="none";
       document.getElementById("reschedPanel").classList.remove("open");
-    } else {
-      toast("⚠ "+res.message,4000);
-    }
-  }catch(e){
-    toast("Network error. Please try again.");
-  }
+    }else toast("⚠ "+res.message,4000);
+  }catch(e){toast("Network error — please try again.");}
 }
 
-// ── INIT ─────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────
+buildFaq();
 render();
 </script>
 </body>
